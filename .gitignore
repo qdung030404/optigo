@@ -55,7 +55,28 @@ fvm_config.json
 
 # Local properties for Android
 **/local.properties
+**/debug.keystore
+**/*.jks
+**/*.keystore
+
+# Flutter specific
+lib/generated_plugin_registrant.dart
+
+# Firebase (Cân nhắc nếu project công khai)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
 
 # iOS specific
 **/Pods/
 **/DerivedData/
+
++ **/debug.keystore
++ **/*.jks
++ **/*.keystore
+
++ android/app/google-services.json
++ ios/Runner/GoogleService-Info.plist
+
++ lib/generated_plugin_registrant.dart
+
+lib/firebase_options.dart
