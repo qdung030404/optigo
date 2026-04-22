@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+    <string>Ứng dụng cần vị trí của bạn để tài xế có thể đón bạn chính xác.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>Ứng dụng cần vị trí để cập nhật hành trình chuyến đi.</string>
 </dict>
 </plist>

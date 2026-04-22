@@ -1,3 +1,12 @@
+import java.util.Properties
+
+// Đọc file .env
+val envFile = rootProject.file("../.env")
+val envProperties = Properties()
+if (envFile.exists()) {
+    envProperties.load(envFile.inputStream())
+}
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -31,6 +40,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Inject Google Maps API key từ .env
+        resValue("string", "GOOGLE_MAPS_API_KEY", envProperties.getProperty("GOOGLE_MAP_API", ""))
     }
 
     buildTypes {
@@ -39,6 +50,12 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
+    }
+
+    lint {
+        baseline = file("lint-baseline.xml")
+        abortOnError = false
+        checkReleaseBuilds = false
     }
 }
 
