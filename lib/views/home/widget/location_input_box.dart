@@ -10,8 +10,10 @@ class LocationInputBox extends StatefulWidget {
   final String? initialDestinationText;
   final String? initialOriginText;
   final Function(PlaceModel)? onDestinationSelected;
-  final SearchController? destinationController;
-  final SearchController? originController;
+  /// Controller cho ô điểm đến (TextEditingController)
+  final TextEditingController? destinationController;
+  /// Controller cho ô điểm đi (TextEditingController)
+  final TextEditingController? originController;
 
   const LocationInputBox({
     super.key,
@@ -27,10 +29,25 @@ class LocationInputBox extends StatefulWidget {
 }
 
 class _LocationInputBoxState extends State<LocationInputBox> {
+  // SearchProvider riêng để lấy placeDetail — không share với SearchProvider global
+  late final SearchProvider _detailProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    _detailProvider = SearchProvider();
+  }
+
+  @override
+  void dispose() {
+    _detailProvider.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(8),
+      padding: const EdgeInsets.all(8),
       width: MediaQuery.of(context).size.width - 32,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -41,52 +58,54 @@ class _LocationInputBoxState extends State<LocationInputBox> {
         children: [
           Column(
             children: [
-              Icon(Icons.circle, color: Colors.yellowAccent, size: 30),
+              const Icon(Icons.circle, color: Colors.yellowAccent, size: 30),
               Image.asset('assets/images/vertical_dotted_line.png'),
-              Icon(Icons.location_pin, color: Colors.redAccent, size: 30),
+              const Icon(Icons.location_pin, color: Colors.redAccent, size: 30),
             ],
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               children: [
+                // ── Điểm đi ──────────────────────────────────────────────
                 SearchLocationWidget(
                   hintText: 'Vị trí của bạn',
-                  searchController: widget.originController,
+                  controller: widget.originController,
                   initialText: widget.initialOriginText,
                   onSelected: (place) async {
-                    final searchProvider = context.read<SearchProvider>();
                     final mapProvider = context.read<MapProvider>();
-                    final detail = await searchProvider.getPlaceDetail(
-                      place.placeId,
-                    );
-                    if (detail != null) {
+                    final detail =
+                        await _detailProvider.getPlaceDetail(place.placeId);
+                    if (detail != null && mounted) {
                       mapProvider.setCurrentLocation(
                         LatLng(detail['lat']!, detail['lng']!),
                       );
-                      mapProvider.getDirection();
+                      // Chỉ vẽ đường nếu cả 2 điểm đã được chọn
+                      if (mapProvider.destinationLatLng != null) {
+                        mapProvider.getDirection();
+                      }
                     }
                   },
                 ),
                 const Divider(height: 1, color: Colors.grey),
+                // ── Điểm đến ─────────────────────────────────────────────
                 SearchLocationWidget(
                   hintText: 'Nhập điểm đến',
-                  searchController: widget.destinationController,
+                  controller: widget.destinationController,
                   initialText: widget.initialDestinationText,
                   onSelected: (place) async {
-                    if (widget.onDestinationSelected != null) {
-                      widget.onDestinationSelected!(place);
-                    }
-                    final searchProvider = context.read<SearchProvider>();
+                    widget.onDestinationSelected?.call(place);
                     final mapProvider = context.read<MapProvider>();
-                    final detail = await searchProvider.getPlaceDetail(
-                      place.placeId,
-                    );
-                    if (detail != null) {
+                    final detail =
+                        await _detailProvider.getPlaceDetail(place.placeId);
+                    if (detail != null && mounted) {
                       await mapProvider.moveCameraAndAddMarker(
                         LatLng(detail['lat']!, detail['lng']!),
                       );
-                      mapProvider.getDirection();
+                      // Chỉ vẽ đường nếu cả 2 điểm đã được chọn
+                      if (mapProvider.currentLatLng != null) {
+                        mapProvider.getDirection();
+                      }
                     }
                   },
                 ),
