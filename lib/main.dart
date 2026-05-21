@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:optigo/config/routes.dart';
 import 'package:optigo/providers/auth_provider.dart';
+import 'package:optigo/providers/booking_provider.dart';
 import 'package:optigo/providers/map_provider.dart';
 import 'package:optigo/providers/search_provider.dart';
 import 'package:optigo/providers/splash_provider.dart';
@@ -11,6 +12,7 @@ import 'package:optigo/providers/trip_provider.dart';
 import 'package:optigo/views/auth/login_screen.dart';
 import 'package:optigo/views/auth/otp_screen.dart';
 import 'package:optigo/views/auth/set_user_name.dart';
+import 'package:optigo/views/booking/booking_manager.dart';
 import 'package:optigo/views/home/home_screen.dart';
 import 'package:optigo/views/splash_screen.dart';
 import 'package:optigo/views/trip/trip_detail_screen.dart';
@@ -49,6 +51,7 @@ class MyApp extends StatelessWidget {
               mapProvider!..update(searchProvider),
         ),
         ChangeNotifierProvider(create: (_) => TripProvider()),
+        ChangeNotifierProvider(create: (_) => BookingProvider())
       ],
       child: ScreenUtilInit(
         designSize: Size(414, 896),
@@ -66,6 +69,7 @@ class MyApp extends StatelessWidget {
               Routes.home: (ctx) => HomeScreen(),
               Routes.tripList: (ctx) => TripListView(),
               Routes.tripDetail: (ctx) => TripDetailScreen(),
+              Routes.bookingManager: (ctx) => BookingManager(),
             },
           );
         }),
