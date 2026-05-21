@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:optigo/providers/splash_provider.dart';
+import 'package:optigo/providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,8 +16,9 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = context.read<AuthProvider>();
       // Truy cập Provider
-      context.read<SplashProvider>().initSplash((nextRoute) {
+      context.read<SplashProvider>().initSplash(authProvider, (nextRoute) {
         // Thực hiện điều hướng dựa trên kết quả từ Provider
         Navigator.pushReplacementNamed(context, nextRoute);
       });

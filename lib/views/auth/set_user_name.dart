@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:optigo/config/routes.dart';
+import 'package:optigo/models/user_model.dart';
 import 'package:optigo/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -15,13 +16,14 @@ class SetUserName extends StatefulWidget {
 class _SetUserNameState extends State<SetUserName> {
   final _formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
+  UserRole _selectedRole = UserRole.passenger;
 
   void _handleSetName() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     if (!_formKey.currentState!.validate()) return;
     try {
       FocusScope.of(context).unfocus();
-      await authProvider.updateProfile(nameController.text);
+      await authProvider.updateProfile(nameController.text, _selectedRole);
       if (!mounted) return;
       if (authProvider.isAuthenticated) {
         Navigator.pushReplacementNamed(context, Routes.home);
@@ -82,7 +84,29 @@ class _SetUserNameState extends State<SetUserName> {
               ),
             ),
           ),
-          Spacer(),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.sp),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildRoleCard(
+                    UserRole.passenger,
+                    'Hành khách',
+                    Icons.person_outline,
+                  ),
+                ),
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: _buildRoleCard(
+                    UserRole.driver,
+                    'Tài xế',
+                    Icons.drive_eta_outlined,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
           Consumer<AuthProvider>(
             builder: (context, auth, child) {
               final bool isLoading = auth.status == AuthStatus.loading;
@@ -113,6 +137,55 @@ class _SetUserNameState extends State<SetUserName> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRoleCard(UserRole role, String title, IconData icon) {
+    final bool isSelected = _selectedRole == role;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedRole = role),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: EdgeInsets.symmetric(vertical: 24.h),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xff176bac) : Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: isSelected ? const Color(0xff176bac) : Colors.grey[300]!,
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xff176bac).withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : [],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 44.sp,
+              color: isSelected ? Colors.white : Colors.black54,
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              title,
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : Colors.black87,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
