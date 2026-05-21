@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:optigo/models/trip_model.dart';
-import 'package:optigo/utils/mock_data.dart';
+import 'package:optigo/services/trip_service.dart';
 
 import '../utils/route_matcher.dart';
 
@@ -16,6 +16,9 @@ class TripProvider extends ChangeNotifier {
   List<TripModel> _trips = [];
   bool _isLoading = false;
   bool _showBookingBottomSheet = true;
+  String? _errorMessage;
+
+  final _tripService = TripService();
 
   final SearchController searchController = SearchController();
 
@@ -39,6 +42,8 @@ class TripProvider extends ChangeNotifier {
   List<TripModel> get trips => _trips;
   bool get isLoading => _isLoading;
   bool get showBookingBottomSheet => _showBookingBottomSheet;
+
+  String? get errorMessage => _errorMessage;
 
   void setShowBookingBottomSheet(bool value) {
     _showBookingBottomSheet = value;
@@ -90,46 +95,58 @@ class TripProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> findTrips({required LatLng origin, required LatLng destination}) async {
+  Future<void> findTrips({
+    required LatLng origin,
+    required LatLng destination,
+  }) async {
     _isLoading = true;
     _trips = [];
+    _errorMessage = null;
     notifyListeners();
-    await Future.delayed(const Duration(seconds: 1));
-    List<TripModel> allMockTrips = MockData.getMockTrips();
-    List<TripModel> recommendedTrips = [];
-    for (var trip in allMockTrips) {
-      if (trip.availableSeats < _passengerCount) {
-        continue;
-      }
 
-      // if (!_isNow) {
-      //   DateTime userDateTime = DateTime(
-      //     _selectedDate.year, _selectedDate.month, _selectedDate.day,
-      //     _selectedTime.hour, _selectedTime.minute,
-      //   );
-      //   // Tính độ lệch thời gian giữa User và Tài xế (đơn vị: phút)
-      //   int timeDiff = trip.departureTime.difference(userDateTime).inMinutes.abs();
-      //   if (timeDiff > 360) {
-      //     continue;
-      //   }
-      // }
+    try {
+      final List<TripModel> allTrips = await _tripService.fetchOpenTrips();
+      List<TripModel> recommendedTrips = [];
 
-      if (trip.routePolyline.isNotEmpty) {
-        List<LatLng> driverRoute = RouteMatcher.decodePolyline(trip.routePolyline);
-        double score = RouteMatcher.calculateDistance(
-          userOrigin: origin,
-          userDestination: destination,
-          driverRoute: driverRoute,
-        );
+      for (var trip in allTrips) {
+        if (trip.availableSeats < _passengerCount) {
+          continue;
+        }
 
-        if (score >= 50.0) {
-          recommendedTrips.add(trip);
+        if (!_isNow) {
+          DateTime tripDateTime = trip.departureTime;
+          bool isSameDay =
+              tripDateTime.year == _selectedDate.year &&
+              tripDateTime.month == _selectedDate.month &&
+              tripDateTime.day == _selectedDate.day;
+          if (!isSameDay) {
+            continue;
+          }
+        }
+
+        if (trip.routePolyline.isNotEmpty) {
+          List<LatLng> driverRoute = RouteMatcher.decodePolyline(
+            trip.routePolyline,
+          );
+          double score = RouteMatcher.calculateDistance(
+            userOrigin: origin,
+            userDestination: destination,
+            driverRoute: driverRoute,
+          );
+
+          if (score >= 50.0) {
+            recommendedTrips.add(trip);
+          }
         }
       }
+
+      _trips = recommendedTrips;
+    } catch (e) {
+      _errorMessage = 'Không thể tải danh sách chuyến đi: $e';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-    _trips = recommendedTrips;
-    _isLoading = false;
-    notifyListeners();
   }
 
   @override
