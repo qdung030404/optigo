@@ -137,6 +137,11 @@ class SearchProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearResults() {
+    _searchResults = [];
+    notifyListeners();
+  }
+
   Future<void> clearHistory() async {
     _searchHistory = [];
     final prefs = await SharedPreferences.getInstance();

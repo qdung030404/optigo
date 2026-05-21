@@ -24,7 +24,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Timer? timeDebounce;
   final SearchController searchController = SearchController();
-  final SearchController originController = SearchController();
+  final TextEditingController originController = TextEditingController();
+  final TextEditingController destinationController = TextEditingController();
 
   @override
   void initState() {
@@ -38,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
     searchController.removeListener(_onSearchChanged);
     searchController.dispose();
     originController.dispose();
+    destinationController.dispose();
     timeDebounce?.cancel();
     super.dispose();
   }
@@ -63,13 +65,17 @@ class _HomeScreenState extends State<HomeScreen> {
     final searchProvider = context.read<SearchProvider>();
     final mapProvider = context.read<MapProvider>();
     controller.closeView(place.description);
+    // Đồng bộ text vào destinationController để LocationInputBox hiển thị đúng
+    destinationController.text = place.description;
     searchProvider.addToHistory(place);
 
     final detail = await searchProvider.getPlaceDetail(place.placeId);
     if (detail != null && mounted) {
       final latLng = LatLng(detail['lat']!, detail['lng']!);
       await mapProvider.moveCameraAndAddMarker(latLng);
-      mapProvider.getDirection();
+      if (mapProvider.currentLatLng != null) {
+        mapProvider.getDirection();
+      }
     }
   }
 
@@ -189,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
             right: 16,
             child: (searchController.text.isNotEmpty)
                 ? LocationInputBox(
-                    destinationController: searchController,
+                    destinationController: destinationController,
                     originController: originController,
                     initialOriginText: context.read<MapProvider>().currentAddress,
                   )
