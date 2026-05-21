@@ -81,7 +81,7 @@ class _BookingManagerState extends State<BookingManager> {
             pickup: booking.pickupLocation!,
             date: DateFormat('dd/MM/yyyy').format(trip.departureTime),
             time: DateFormat('HH:mm').format(trip.departureTime),
-            status: trip.status,
+            status: booking.status,
           );
         },
       ),
@@ -179,18 +179,18 @@ class _BookingManagerState extends State<BookingManager> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5E9),
+                    color: status == 'pending' ? Colors.orange.withOpacity(0.2) : Colors.green.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.verified, size: 14, color: Colors.green),
+                      status == 'pending' ? FaIcon(FontAwesomeIcons.clock, size: 14, color: Colors.orange) : Icon(Icons.verified, size: 14, color: Colors.green),
                       SizedBox(width: 4.w),
                       Text(
-                        status,
+                        status == 'pending' ? 'Đang xử lý' : 'Đã xác nhận',
                         style: TextStyle(
                           fontSize: 10.sp,
-                          color: Colors.green[700],
+                          color: status == 'pending' ? Colors.orange[700] : Colors.green[700],
                           fontWeight: FontWeight.bold,
                         ),
                       ),

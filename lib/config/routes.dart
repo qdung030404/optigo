@@ -8,4 +8,5 @@ class Routes {
   static const profile = 'profile';
   static const tripList = 'trip_list';
   static const tripDetail = 'trip_detail';
+  static const bookingManager = 'booking_manager';
 }
