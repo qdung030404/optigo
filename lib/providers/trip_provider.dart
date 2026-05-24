@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:optigo/models/trip_model.dart';
@@ -148,7 +149,44 @@ class TripProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  Future<String?> fetchRoutePolyline(LatLng origin, LatLng destination) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try{
+      final routePolyline = await _tripService.getRoutePolyline(origin, destination);
+      if (routePolyline == null) {
+        _errorMessage = "Không thể lấy thông tin đường đi từ bản đồ.";
+      }
+      return routePolyline;
+    }catch(e){
+      _errorMessage = e.toString();
+      return null;
+    }finally{
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+  Future<bool> createTrip(TripModel trip) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      // Lấy token hiện tại của người dùng Firebase để xác thực với Supabase vượt qua RLS
+      final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if (idToken == null) throw Exception("User not authenticated");
 
+      await _tripService.createTrip(trip, idToken);
+      return true;
+    } catch (e) {
+      _errorMessage = 'Lỗi tạo chuyến đi: $e';
+      debugPrint('Error creating trip: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
   @override
   void dispose() {
     searchController.removeListener(_onSearchChanged);

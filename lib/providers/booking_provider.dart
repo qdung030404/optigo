@@ -8,6 +8,8 @@ import '../models/booking_model.dart';
 
 class BookingProvider extends ChangeNotifier {
   bool _isSuccess = false;
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
   bool get isSuccess => _isSuccess;
   final _tripService = TripService();
   List<BookingModel> _bookings = [];
@@ -25,6 +27,8 @@ class BookingProvider extends ChangeNotifier {
   }
 
   Future<void> createBooking(BookingModel booking) async {
+    _isLoading = true;
+    notifyListeners();
     final currentUser = FirebaseAuth.instance.currentUser!;
     final idToken = await currentUser.getIdToken();
 
@@ -46,7 +50,10 @@ class BookingProvider extends ChangeNotifier {
       );
     } catch (e) {
       debugPrint('[Booking] Profile upsert THẤT BẠI: $e');
-      rethrow;
+      _isLoading = false;
+    }finally{
+      _isLoading = false;
+      notifyListeners();
     }
 
     // Bước 2: Tạo booking

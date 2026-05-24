@@ -47,8 +47,8 @@ class BuildDrawer extends StatelessWidget {
             'Đăng xuất',
             Icons.logout,
                 () async {
-              // ... logic logout ...
               authProvider.signOut();
+              Navigator.pushReplacementNamed(context, Routes.login);
             },
             color: Colors.red,
           ),
