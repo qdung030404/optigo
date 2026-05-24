@@ -116,7 +116,7 @@ class AuthProvider extends ChangeNotifier {
       rethrow;
     }
   }
-  Future<void> updateProfile(String name) async {
+  Future<void> updateProfile(String name, UserRole role) async {
     if (_user == null) return;
     try {
       _status = AuthStatus.loading;
@@ -134,6 +134,7 @@ class AuthProvider extends ChangeNotifier {
         'id': _user!.uid,
         'user_name': name,
         'phone': _user!.phoneNumber,
+        'role': role.name,
         'updated_at': DateTime.now().toIso8601String(),
       });
 
@@ -141,6 +142,7 @@ class AuthProvider extends ChangeNotifier {
         uid: _user!.uid,
         userName: name,
         phoneNumber: _user!.phoneNumber,
+        role: role,
       );
       _status = AuthStatus.authenticated;
 
@@ -162,7 +164,11 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> _handleUserSignIn(UserCredential userCredential) async {
     final String uid = userCredential.user?.uid ?? '';
-    final idToken = await userCredential.user?.getIdToken();
+    await _loadUserProfile(uid);
+    notifyListeners();
+  }
+  Future<void> _loadUserProfile(String uid) async {
+    final idToken = await _auth.currentUser?.getIdToken();
 
     // Đọc thông tin từ Supabase với JWT của Firebase
     final response = await SupabaseClient(
@@ -175,21 +181,28 @@ class AuthProvider extends ChangeNotifier {
         .maybeSingle();
 
     if (response != null) {
-      // Chuyển đổi dữ liệu từ Supabase (key snake_case) sang UserModel
-      _user = UserModel(
-        uid: uid,
-        userName: response['user_name'] ?? '',
-        phoneNumber: response['phone'] ?? '', // Đổi từ phone_number sang phone
-      );
+      final profileData = Map<String, dynamic>.from(response);
+      profileData['phone_number'] = response['phone'];
+
+      _user = UserModel.formMap(profileData, uid);
       _status = AuthStatus.authenticated;
     } else {
       _user = UserModel(
         uid: uid,
         userName: '',
-        phoneNumber: userCredential.user?.phoneNumber ?? '',
+        phoneNumber: _auth.currentUser?.phoneNumber ?? '',
       );
       _status = AuthStatus.unregistered;
     }
-    notifyListeners();
+  }
+
+  Future<void> checkAuthStatus() async {
+    final currentUser = _auth.currentUser;
+    if (currentUser != null) {
+      await _loadUserProfile(currentUser.uid);
+    }else{
+      _status = AuthStatus.initial;
+      notifyListeners();
+    }
   }
 }

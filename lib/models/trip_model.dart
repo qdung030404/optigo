@@ -1,5 +1,5 @@
 class TripModel {
-  final String id;
+  final String? id;
   final String driverId;
   final String originName;
   final String destinationName;
@@ -9,13 +9,13 @@ class TripModel {
   final double destinationLng;
   final String routePolyline;
   final double? overlapPercentage;
-  final double price;
+  final int price;
   final int availableSeats;
   final DateTime departureTime;
   final String status;
 
   TripModel({
-    required this.id,
+    this.id,
     required this.driverId,
     required this.originName,
     required this.destinationName,
@@ -33,7 +33,7 @@ class TripModel {
 
   factory TripModel.fromJson(Map<String, dynamic> map) {
     return TripModel(
-      id: map['id'] ?? '',
+      id: map['id'],
       driverId: map['driver_id'] ?? '',
       originName: map['origin_name'] ?? '',
       destinationName: map['destination_name'] ?? '',
@@ -42,7 +42,7 @@ class TripModel {
       destinationLat: (map['destination_lat'] as num?)?.toDouble() ?? 0.0,
       destinationLng: (map['destination_lng'] as num?)?.toDouble() ?? 0.0,
       routePolyline: map['route_polyline'] ?? '',
-      price: (map['price'] as num?)?.toDouble() ?? 0.0,
+      price: (map['price'] as num?)?.toInt() ?? 0,
       availableSeats: map['available_seats'] ?? 0,
       departureTime: map['departure_time'] != null ? DateTime.parse(map['departure_time']) : DateTime.now() ,
       status: map['status'] ?? 'open',
@@ -51,7 +51,9 @@ class TripModel {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      'driver_id': driverId,
+      'origin_name': originName,
+      'destination_name': destinationName,
       'origin_lat': originLat,
       'origin_lng': originLng,
       'destination_lat': destinationLat,

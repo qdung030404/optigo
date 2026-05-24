@@ -152,16 +152,10 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () async {
-                  debugPrint(
-                    '[Booking] passengerId = ${authProvider.user?.uid}',
-                  );
-                  debugPrint(
-                    '[Booking] Firebase uid = ${FirebaseAuth.instance.currentUser?.uid}',
-                  );
+                onPressed: bookingProvider.isLoading ? null : () async {
                   final bookingData = BookingModel(
                     passengerId: FirebaseAuth.instance.currentUser?.uid ?? '',
-                    tripId: trip.id,
+                    tripId: trip.id!,
                     pickupLocation: selectedName,
                     pickupLat: _selectedPickupPoint?.latitude,
                     pickupLng: _selectedPickupPoint?.longitude,
@@ -170,7 +164,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                     totalFare: trip.price * tripProvider.passengerCount,
                     paymentMethod: tripProvider.paymentMethod,
                     note: tripProvider.note,
-                    status: 'pending',
+                    status: 'confirm',
                     createdAt: DateTime.now(),
                   );
                   try {

@@ -7,7 +7,7 @@ class BookingModel {
   final double? pickupLat;
   final double? pickupLng;
   final int numberOfPassengers;
-  final double? totalFare;
+  final int? totalFare;
   final String? paymentMethod;
   final String? note;
   final String status;
@@ -41,7 +41,7 @@ class BookingModel {
       pickupLat: (map['pickup_lat'] as num?)?.toDouble(),
       pickupLng: (map['pickup_lng'] as num?)?.toDouble(),
       numberOfPassengers: map['number_of_passengers'] ?? 1,
-      totalFare: (map['total_fare'] as num?)?.toDouble(),
+      totalFare: (map['total_fare'] as num?)?.toInt() ?? 0,
       paymentMethod: map['payment_method'] ?? 'cash',
       note: map['note'],
       status: map['status'] ?? 'pending',
@@ -78,7 +78,7 @@ class BookingModel {
     double? pickupLat,
     double? pickupLng,
     int? numberOfPassengers,
-    double? totalFare,
+    int? totalFare,
     String? paymentMethod,
     String? note,
     String? status,
