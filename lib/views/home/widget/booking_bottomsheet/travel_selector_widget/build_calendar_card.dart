@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:optigo/providers/trip_provider.dart';
+import 'package:optigo/providers/booking_provider.dart';
 import 'package:provider/provider.dart';
 
 class BuildCalendarCard extends StatefulWidget {
@@ -13,17 +13,6 @@ class BuildCalendarCard extends StatefulWidget {
 class _BuildCalendarCardState extends State<BuildCalendarCard> {
   DateTime focusedDate = DateTime.now();
   DateTime today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-
-  void _pickTime() async {
-    final pickedTime = await showTimePicker(
-      context: context,
-      initialTime: context.read<TripProvider>().selectedTime
-    );
-    if (!mounted) return;
-    if (pickedTime != null) {
-      context.read<TripProvider>().setTime(pickedTime);
-    }
-  }
 
   int _daysInMonth(DateTime date) {
     return DateTime(date.year, date.month + 1, 0).day;
@@ -47,9 +36,8 @@ class _BuildCalendarCardState extends State<BuildCalendarCard> {
   }
   @override
   Widget build(BuildContext context) {
-    final tripProvider = context.watch<TripProvider>();
-    final selectedDate = tripProvider.selectedDate;
-    final selectedTime = tripProvider.selectedTime;
+    final bookingProvider = context.watch<BookingProvider>();
+    final selectedDate = bookingProvider.selectedDate;
     final displayMonth = "Tháng ${focusedDate.month}";
 
     return Container(
@@ -98,19 +86,6 @@ class _BuildCalendarCardState extends State<BuildCalendarCard> {
           ),
           SizedBox(height: 16.h),
           _buildCalendarGrid(selectedDate),
-          SizedBox(height: 24.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Time", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp)),
-              GestureDetector(
-                onTap: _pickTime,
-                child: _buildTimeDisplay(
-                  selectedTime.format(context),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -180,7 +155,7 @@ class _BuildCalendarCardState extends State<BuildCalendarCard> {
 
           return GestureDetector(
             onTap: isPast ? null : () {
-              context.read<TripProvider>().setDate(
+              context.read<BookingProvider>().setDate(
                   DateTime(focusedDate.year, focusedDate.month, int.parse(d))
               );
             },

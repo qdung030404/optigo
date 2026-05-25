@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:optigo/providers/trip_provider.dart';
+import 'package:optigo/providers/booking_provider.dart';
 import 'package:provider/provider.dart';
 
 class BuildNoteField extends StatefulWidget {
@@ -16,8 +16,20 @@ class _BuildNoteFieldState extends State<BuildNoteField> {
 
   @override
   void initState() {
-    _noteController.text = context.read<TripProvider>().note;
+    _noteController.text = context.read<BookingProvider>().note;
+    _noteController.addListener(_onNoteChanged);
     super.initState();
+  }
+
+  void _onNoteChanged() {
+    context.read<BookingProvider>().setNote(_noteController.text);
+  }
+
+  @override
+  void dispose() {
+    _noteController.removeListener(_onNoteChanged);
+    _noteController.dispose();
+    super.dispose();
   }
 
   @override

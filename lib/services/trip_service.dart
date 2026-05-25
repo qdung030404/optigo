@@ -17,7 +17,7 @@ class TripService {
   Future<List<TripModel>> fetchOpenTrips() async {
     final response = await _client
         .from('trips')
-        .select()
+        .select('*, profiles(user_name, license_plate)')
         .eq('status', 'open')
         .order('departure_time', ascending: true);
 

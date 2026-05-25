@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:optigo/providers/trip_provider.dart';
+import 'package:optigo/providers/booking_provider.dart';
 import 'package:provider/provider.dart';
 class NumberOfPassenger extends StatefulWidget {
   const NumberOfPassenger({super.key});
@@ -12,8 +12,8 @@ class NumberOfPassenger extends StatefulWidget {
 class _NumberOfPassengerState extends State<NumberOfPassenger> {
   @override
   Widget build(BuildContext context) {
-    return Consumer<TripProvider>(
-      builder: (context, tripProvider, child) {
+    return Consumer<BookingProvider>(
+      builder: (context, bookingProvider, child) {
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           decoration: BoxDecoration(
@@ -69,11 +69,11 @@ class _NumberOfPassengerState extends State<NumberOfPassenger> {
                 children: [
                   _CountButton(
                     icon: Icons.remove_rounded,
-                    onPressed: tripProvider.passengerCount > 1
-                        ? () => tripProvider.decrementPassenger()
+                    onPressed: bookingProvider.passengerCount > 1
+                        ? () => bookingProvider.decrementPassenger()
                         : null,
-                    color:tripProvider.passengerCount > 1 ? Color(0xfffedd59) : Colors.grey.shade200,
-                    iconColor: tripProvider.passengerCount > 1 ? const Color(0xff176bac) : Colors.grey,
+                    color:bookingProvider.passengerCount > 1 ? Color(0xfffedd59) : Colors.grey.shade200,
+                    iconColor: bookingProvider.passengerCount > 1 ? const Color(0xff176bac) : Colors.grey,
                   ),
                   Container(
                     constraints: const BoxConstraints(minWidth: 40),
@@ -84,8 +84,8 @@ class _NumberOfPassengerState extends State<NumberOfPassenger> {
                           return ScaleTransition(scale: animation, child: child);
                         },
                         child: Text(
-                          '${tripProvider.passengerCount}',
-                          key: ValueKey(tripProvider.passengerCount),
+                          '${bookingProvider.passengerCount}',
+                          key: ValueKey(bookingProvider.passengerCount),
                           style: GoogleFonts.lexend(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -97,7 +97,7 @@ class _NumberOfPassengerState extends State<NumberOfPassenger> {
                   ),
                   _CountButton(
                     icon: Icons.add_rounded,
-                    onPressed: () => tripProvider.incrementPassenger(),
+                    onPressed: () => bookingProvider.incrementPassenger(),
                     color: const Color(0xfffedd59),
                     iconColor: const Color(0xff176bac),
                   ),

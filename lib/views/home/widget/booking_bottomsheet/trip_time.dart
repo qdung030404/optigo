@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:optigo/providers/trip_provider.dart';
+import 'package:optigo/providers/booking_provider.dart';
 import 'package:optigo/views/home/widget/booking_bottomsheet/travel_selector_widget/travel_time_selector.dart';
 import 'package:provider/provider.dart';
 
@@ -13,24 +13,21 @@ class TripTime extends StatefulWidget {
 
 class _TripTimeState extends State<TripTime> {
   Map<String, dynamic>? _selectedTravelTime;
-  String _displayTime(TripProvider tripProvider) {
-    if (!tripProvider.isTimeSelected) return 'Vui lòng chọn thời gian di chuyển';
-    if (tripProvider.isNow) return "Ngay bây giờ";
+  String _displayTime(BookingProvider bookingProvider) {
+    if (!bookingProvider.isTimeSelected) return 'Vui lòng chọn thời gian di chuyển';
+    if (bookingProvider.isNow) return "Ngay bây giờ";
 
-    final date = tripProvider.selectedDate;
-    final time = tripProvider.selectedTime;
+    final date = bookingProvider.selectedDate;
 
     final year = date.year.toString();
     final day = date.day.toString().padLeft(2, '0');
     final month = date.month.toString().padLeft(2, '0');
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
 
-    return "$hour:$minute, $day/$month/$year";
+    return "$day/$month/$year";
   }
   @override
   Widget build(BuildContext context) {
-    final tripProvider = context.watch<TripProvider>();
+    final bookingProvider = context.watch<BookingProvider>();
     return GestureDetector(
       onTap: () async {
         Navigator.push(
@@ -68,11 +65,11 @@ class _TripTimeState extends State<TripTime> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _displayTime(tripProvider),
+                    _displayTime(bookingProvider),
                     style: GoogleFonts.lexend(
                       fontSize: 14,
-                      color: tripProvider.isTimeSelected ? const Color(0xff176bac) : Colors.grey,
-                      fontWeight: tripProvider.isTimeSelected ? FontWeight.w500 : FontWeight.w400,
+                      color: bookingProvider.isTimeSelected ? const Color(0xff176bac) : Colors.grey,
+                      fontWeight: bookingProvider.isTimeSelected ? FontWeight.w500 : FontWeight.w400,
                     ),
                   ),
                 ],
