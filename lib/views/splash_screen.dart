@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:optigo/providers/splash_provider.dart';
 import 'package:optigo/providers/auth_provider.dart';
 
+import '../providers/booking_provider.dart';
+import '../providers/trip_provider.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -17,11 +20,19 @@ class _SplashScreenState extends State<SplashScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = context.read<AuthProvider>();
+      final bookingProvider = context.read<BookingProvider>();
+      final tripProvider = context.read<TripProvider>();
+
       // Truy cập Provider
-      context.read<SplashProvider>().initSplash(authProvider, (nextRoute) {
-        // Thực hiện điều hướng dựa trên kết quả từ Provider
-        Navigator.pushReplacementNamed(context, nextRoute);
-      });
+      context.read<SplashProvider>().initSplash(
+        authProvider,
+        bookingProvider,
+        tripProvider,
+        (nextRoute) {
+          // Thực hiện điều hướng dựa trên kết quả từ Provider
+          Navigator.pushReplacementNamed(context, nextRoute);
+        },
+      );
     });
   }
 
