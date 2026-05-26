@@ -12,6 +12,7 @@ import 'package:optigo/views/home/widget/build_drawer.dart';
 import 'package:optigo/views/home/widget/build_map.dart';
 import 'package:optigo/views/home/widget/location_input_box.dart';
 import 'package:optigo/views/home/widget/booking_bottomsheet/booking_bottomsheet.dart';
+import 'package:optigo/views/home/widget/search_page.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,66 +23,64 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Timer? timeDebounce;
-  final SearchController searchController = SearchController();
   final TextEditingController originController = TextEditingController();
   final TextEditingController destinationController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Lắng nghe sự thay đổi của text để gọi API tìm kiếm
-    searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
-    searchController.removeListener(_onSearchChanged);
-    searchController.dispose();
     originController.dispose();
     destinationController.dispose();
-    timeDebounce?.cancel();
     super.dispose();
   }
-
-  void _onSearchChanged() {
-    if (timeDebounce?.isActive ?? false) timeDebounce!.cancel();
-    timeDebounce = Timer(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        setState(() {}); // Đảm bảo AppBar cập nhật khi text thay đổi
+  Future<void> _handleSearch({required bool isOrigin}) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchPage(
+          hintText: isOrigin ? 'Nhập điểm đi' : 'Nhập điểm đến',
+        ),
+      ),
+    );
+    if (result != null && result is PlaceModel && mounted) {
+      // 1. Cập nhật nội dung ô nhập liệu tương ứng
+      if (isOrigin) {
+        originController.text = result.description;
+      } else {
+        destinationController.text = result.description;
       }
-      if (searchController.text.isNotEmpty) {
-        if (!mounted) return;
-        context.read<SearchProvider>().searchPlace(searchController.text);
-      }
-    });
-  }
+      // 2. Lấy tọa độ chi tiết và cập nhật bản đồ
+      final searchProvider = context.read<SearchProvider>();
+      final mapProvider = context.read<MapProvider>();
+      final detail = await searchProvider.getPlaceDetail(result.placeId);
+      if (detail != null && mounted) {
+        final latLng = LatLng(detail['lat']!, detail['lng']!);
 
-  void searchToggle(
-    BuildContext context,
-    PlaceModel place,
-    SearchController controller,
-  ) async {
-    final searchProvider = context.read<SearchProvider>();
-    final mapProvider = context.read<MapProvider>();
-    controller.closeView(place.description);
-    // Đồng bộ text vào destinationController để LocationInputBox hiển thị đúng
-    destinationController.text = place.description;
-    searchProvider.addToHistory(place);
-
-    final detail = await searchProvider.getPlaceDetail(place.placeId);
-    if (detail != null && mounted) {
-      final latLng = LatLng(detail['lat']!, detail['lng']!);
-      await mapProvider.moveCameraAndAddMarker(latLng);
-      if (mapProvider.currentLatLng != null) {
-        mapProvider.getDirection();
+        if (isOrigin) {
+          mapProvider.setCurrentLocation(latLng);
+        } else {
+          await mapProvider.moveCameraAndAddMarker(latLng);
+        }
+        // 3. Tự động vẽ đường đi nếu đã có đủ 2 điểm
+        if (mapProvider.currentLatLng != null && mapProvider.destinationLatLng != null) {
+          mapProvider.getDirection();
+        }
       }
     }
   }
-
   @override
   Widget build(BuildContext context) {
     final user = context.select<AuthProvider, UserModel?>((p) => p.user);
+    final mapProvider = context.watch<MapProvider>();
+
+    // Tự động điền vị trí hiện tại vào ô điểm đi nếu đang trống
+    if (mapProvider.currentAddress != null && originController.text.isEmpty) {
+      originController.text = mapProvider.currentAddress!;
+    }
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -112,75 +111,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: const Color(0xffFFF1B1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: SearchAnchor(
-                searchController: searchController,
-                builder: (context, controller) {
-                  return IconButton(
-                    icon: Icon(
-                      controller.text.isEmpty ? Icons.search : Icons.clear,
-                      color: Colors.black,
-                    ),
-                    onPressed: () {
-                      if (controller.text.isEmpty) {
-                        controller.openView();
-                      } else {
-                        final mapProvider = context.read<MapProvider>();
-                        controller.clear();
-                        mapProvider.clearDestination();
-                        mapProvider.goToCurrentLocation();
-                      }
-                    },
-                  );
-                },
-                suggestionsBuilder: (context, controller) {
-                  final searchProvider = context.read<SearchProvider>();
-                  final results = searchProvider.searchResults;
-
-                  if (controller.text.isEmpty) {
-                    final history = searchProvider.searchHistory;
-                    if (history.isEmpty) {
-                      return [const ListTile(title: Text('Nhập để tìm kiếm'))];
-                    }
-                    return [
-                      const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text(
-                          'Gần đây',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      ...history.map(
-                        (place) => listTileItem(
-                          () => searchToggle(context, place, controller),
-                          Icons.history,
-                          place,
-                          Colors.grey,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () => searchProvider.clearHistory(),
-                        child: const Text('Xóa lịch sử'),
-                      ),
-                    ];
+              child: IconButton(
+                icon: Icon(
+                  destinationController.text.isEmpty ? Icons.search : Icons.close,
+                  color: Colors.black,
+                ),
+                onPressed: () {
+                  if (destinationController.text.isEmpty) {
+                    _handleSearch(isOrigin: false);
+                  } else {
+                    // Xóa trạng thái và quay về chế độ bản đồ thuần túy
+                    destinationController.clear();
+                    context.read<MapProvider>().clearDestination();
+                    context.read<MapProvider>().goToCurrentLocation();
                   }
-
-                  if (results.isEmpty && !searchProvider.isSearching) {
-                    return [
-                      const ListTile(title: Text('Không tìm thấy kết quả')),
-                    ];
-                  }
-                  return results
-                      .map(
-                        (place) => listTileItem(
-                          () => searchToggle(context, place, controller),
-                          Icons.location_on_outlined,
-                          place,
-                          Colors.red,
-                        ),
-                      )
-                      .toList();
                 },
-              ),
+              )
             ),
           ),
         ],
@@ -193,11 +139,17 @@ class _HomeScreenState extends State<HomeScreen> {
             top: MediaQuery.of(context).padding.top + 60,
             left: 16,
             right: 16,
-            child: (searchController.text.isNotEmpty)
+            child: (destinationController.text.isNotEmpty)
                 ? LocationInputBox(
                     destinationController: destinationController,
                     originController: originController,
-                    initialOriginText: context.read<MapProvider>().currentAddress,
+                    initialOriginText: mapProvider.currentAddress,
+                    onOriginTap: () {
+                      _handleSearch(isOrigin: true);
+                    },
+                    onDestinationTap: () {
+                      _handleSearch(isOrigin: false);
+                    },
                   )
                 : const SizedBox.shrink(),
           ),
@@ -205,9 +157,10 @@ class _HomeScreenState extends State<HomeScreen> {
             bottom: 0,
             left: 0,
             right: 0,
-            child: (searchController.text.isNotEmpty)
+            child: (destinationController.text.isNotEmpty)
                 ? Visibility(
-                    visible: context.watch<BookingProvider>().showBookingBottomSheet,
+                    visible: context.watch<BookingProvider>().showBookingBottomSheet &&
+                        MediaQuery.of(context).viewInsets.bottom == 0,
                     child: const BookingBottomsheet(),
                   )
                 : const SizedBox.shrink(),

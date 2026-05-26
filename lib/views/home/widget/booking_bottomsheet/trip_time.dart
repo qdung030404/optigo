@@ -12,7 +12,6 @@ class TripTime extends StatefulWidget {
 }
 
 class _TripTimeState extends State<TripTime> {
-  Map<String, dynamic>? _selectedTravelTime;
   String _displayTime(BookingProvider bookingProvider) {
     if (!bookingProvider.isTimeSelected) return 'Vui lòng chọn thời gian di chuyển';
     if (bookingProvider.isNow) return "Ngay bây giờ";

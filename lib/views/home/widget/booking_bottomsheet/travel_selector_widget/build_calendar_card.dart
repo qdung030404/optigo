@@ -182,15 +182,4 @@ class _BuildCalendarCardState extends State<BuildCalendarCard> {
       ),
     );
   }
-
-  Widget _buildTimeDisplay(String time) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(time, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500)),
-    );
-  }
 }
