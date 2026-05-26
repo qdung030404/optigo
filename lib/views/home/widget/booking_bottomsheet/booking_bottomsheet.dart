@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:optigo/config/routes.dart';
 import 'package:optigo/providers/map_provider.dart';
+import 'package:optigo/providers/booking_provider.dart';
 import 'package:optigo/providers/trip_provider.dart';
 import 'package:optigo/views/home/widget/booking_bottomsheet/trip_time.dart';
 import 'package:provider/provider.dart';
@@ -53,7 +54,7 @@ class _BookingBottomsheetState extends State<BookingBottomsheet> {
                     elevation: 0,
                   ),
                   onPressed: () {
-                    context.read<TripProvider>().setShowBookingBottomSheet(true);
+                    context.read<BookingProvider>().setShowBookingBottomSheet(true);
                     Navigator.pop(context);
                   },
                   child: Text('Hủy tìm kiếm'),
@@ -104,26 +105,30 @@ class _BookingBottomsheetState extends State<BookingBottomsheet> {
             onPressed: () async {
               final mapProvider = context.read<MapProvider>();
               final tripProvider = context.read<TripProvider>();
+              final bookingProvider = context.read<BookingProvider>();
               final navigator = Navigator.of(context);
 
-              tripProvider.setShowBookingBottomSheet(false);
+              bookingProvider.setShowBookingBottomSheet(false);
               _showLoadingDialog();
 
               try {
                 await tripProvider.findTrips(
                   origin: mapProvider.currentLatLng!,
                   destination: mapProvider.destinationLatLng!,
+                  passengerCount: bookingProvider.passengerCount,
+                  isNow: bookingProvider.isNow,
+                  selectedDate: bookingProvider.selectedDate,
                 );
 
-                if (!tripProvider.showBookingBottomSheet) {
+                if (!bookingProvider.showBookingBottomSheet) {
                   navigator.pop(); // Close loading dialog
                   navigator.pushNamed(Routes.tripList);
-                  tripProvider.setShowBookingBottomSheet(true);
+                  bookingProvider.setShowBookingBottomSheet(true);
                 }
               } catch (e) {
-                if (!tripProvider.showBookingBottomSheet) {
+                if (!bookingProvider.showBookingBottomSheet) {
                   navigator.pop();
-                  tripProvider.setShowBookingBottomSheet(true);
+                  bookingProvider.setShowBookingBottomSheet(true);
                 }
                 debugPrint("Lỗi tìm chuyến: $e");
               }

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:optigo/providers/booking_provider.dart';
 import 'package:provider/provider.dart';
-import '../../../../providers/trip_provider.dart';
 
 class PaymentMethod extends StatelessWidget {
   const PaymentMethod({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final paymentMethod = context.watch<TripProvider>().paymentMethod;
+    final paymentMethod = context.watch<BookingProvider>().paymentMethod;
     
     return Row(
       children: [

@@ -1,6 +1,8 @@
 class TripModel {
   final String? id;
   final String driverId;
+  final String? driverName;
+  final String? driverLicensePlate;
   final String originName;
   final String destinationName;
   final double originLat;
@@ -17,6 +19,8 @@ class TripModel {
   TripModel({
     this.id,
     required this.driverId,
+    this.driverName,
+    this.driverLicensePlate,
     required this.originName,
     required this.destinationName,
     required this.originLat,
@@ -32,19 +36,26 @@ class TripModel {
   });
 
   factory TripModel.fromJson(Map<String, dynamic> map) {
+
+    final profile = map['profiles'] as Map<String, dynamic>?;
+
     return TripModel(
       id: map['id'],
       driverId: map['driver_id'] ?? '',
+      driverName: profile?['user_name'],
+      driverLicensePlate: profile?['license_plate'],
       originName: map['origin_name'] ?? '',
       destinationName: map['destination_name'] ?? '',
       originLat: (map['origin_lat'] as num?)?.toDouble() ?? 0.0,
-      originLng: (map['origin_lng']as num?)?.toDouble() ?? 0.0,
+      originLng: (map['origin_lng'] as num?)?.toDouble() ?? 0.0,
       destinationLat: (map['destination_lat'] as num?)?.toDouble() ?? 0.0,
       destinationLng: (map['destination_lng'] as num?)?.toDouble() ?? 0.0,
       routePolyline: map['route_polyline'] ?? '',
       price: (map['price'] as num?)?.toInt() ?? 0,
       availableSeats: map['available_seats'] ?? 0,
-      departureTime: map['departure_time'] != null ? DateTime.parse(map['departure_time']) : DateTime.now() ,
+      departureTime: map['departure_time'] != null
+          ? DateTime.parse(map['departure_time'])
+          : DateTime.now(),
       status: map['status'] ?? 'open',
     );
   }

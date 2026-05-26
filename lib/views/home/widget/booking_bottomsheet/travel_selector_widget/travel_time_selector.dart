@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:optigo/providers/trip_provider.dart';
+import 'package:optigo/providers/booking_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'build_calendar_card.dart';
@@ -16,7 +16,7 @@ class TravelTimeSelector extends StatefulWidget {
 class _TravelTimeSelectorState extends State<TravelTimeSelector> {
   @override
   Widget build(BuildContext context) {
-    final tripProvider = context.watch<TripProvider>();
+    final bookingProvider = context.watch<BookingProvider>();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -43,22 +43,22 @@ class _TravelTimeSelectorState extends State<TravelTimeSelector> {
           children: [
             _buildSelectionOption(
               title: "DI CHUYỂN NGAY",
-              isSelected: tripProvider.isNow,
+              isSelected: bookingProvider.isNow,
               onTap: () {
-                context.read<TripProvider>().setIsNow(true);
+                context.read<BookingProvider>().setIsNow(true);
               },
-              highlightColor: tripProvider.isNow ? const Color(0xfffedd59) : Colors.grey[300],
+              highlightColor: bookingProvider.isNow ? const Color(0xfffedd59) : Colors.grey[300],
             ),
             SizedBox(height: 12.h),
             _buildSelectionOption(
               title: "LÊN LỊCH TRÌNH",
-              isSelected: !tripProvider.isNow,
+              isSelected: !bookingProvider.isNow,
               onTap: () {
-                context.read<TripProvider>().setIsNow(false);
+                context.read<BookingProvider>().setIsNow(false);
               },
-              highlightColor: !tripProvider.isNow ? const Color(0xfffedd59) : Colors.grey[300],
+              highlightColor: !bookingProvider.isNow ? const Color(0xfffedd59) : Colors.grey[300],
             ),
-            if (!tripProvider.isNow) ...[
+            if (!bookingProvider.isNow) ...[
               SizedBox(height: 24.h),
               BuildCalendarCard(),
             ],
@@ -75,12 +75,11 @@ class _TravelTimeSelectorState extends State<TravelTimeSelector> {
         ),
         child: ElevatedButton(
           onPressed: () {
-            context.read<TripProvider>().confirmTime();
+            context.read<BookingProvider>().confirmTime();
             Navigator.pop(context, {
-              'isNow': tripProvider.isNow,
-              'selectedDate': tripProvider.selectedDate,
-              'selectedTime': tripProvider.selectedTime,
-              'note': tripProvider.note,
+              'isNow': bookingProvider.isNow,
+              'selectedDate': bookingProvider.selectedDate,
+              'note': bookingProvider.note,
             });
           },
           style: ElevatedButton.styleFrom(

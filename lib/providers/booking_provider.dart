@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:optigo/services/trip_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,12 +13,70 @@ class BookingProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isSuccess => _isSuccess;
   final _tripService = TripService();
+  bool _isNow = false;
+  bool _isTimeSelected = false;
+  DateTime _selectedDate = DateTime.now();
+  String _note = "";
+  int _passengerCount = 1;
+  String _paymentMethod = "Tiền mặt";
+  bool _showBookingBottomSheet = true;
+
+  bool get isNow => _isNow;
+  DateTime get selectedDate => _selectedDate;
+  bool get isTimeSelected => _isTimeSelected;
+  int get passengerCount => _passengerCount;
+  String get paymentMethod => _paymentMethod;
+  String get note => _note;
+  bool get showBookingBottomSheet => _showBookingBottomSheet;
+
+  void setShowBookingBottomSheet(bool value) {
+    _showBookingBottomSheet = value;
+    notifyListeners();
+  }
+
+  void setDate(DateTime date) {
+    _selectedDate = date;
+    notifyListeners();
+  }
+
+  void setNote(String note) {
+    _note = note;
+    notifyListeners();
+  }
+
+  void setIsNow(bool isNow) {
+    _isNow = isNow;
+    notifyListeners();
+  }
+
+  void confirmTime() {
+    _isTimeSelected = true;
+    notifyListeners();
+  }
+
+  void incrementPassenger() {
+    _updatePassengerCount(_passengerCount + 1);
+  }
+
+  void decrementPassenger() {
+    _updatePassengerCount(_passengerCount - 1);
+  }
+
+  void setPaymentMethod(String method) {
+    _paymentMethod = method;
+    notifyListeners();
+  }
+
+  void _updatePassengerCount(int newCount) {
+    if (newCount >= 1) {
+      _passengerCount = newCount;
+      notifyListeners();
+    }
+  }
+
   List<BookingModel> _bookings = [];
   List<BookingModel> get bookings => _bookings;
 
-
-  bool _isLoadingBookings = false;
-  bool get isLoadingBookings => _isLoadingBookings;
   String? _bookingErrorMessage;
   String? get bookingErrorMessage => _bookingErrorMessage;
 
@@ -66,7 +125,7 @@ class BookingProvider extends ChangeNotifier {
   }
 
   Future<void> loadBookings() async {
-    _isLoadingBookings = true;
+    _isLoading = true;
     _bookingErrorMessage = null;
     _bookings = [];
     notifyListeners();
@@ -75,7 +134,7 @@ class BookingProvider extends ChangeNotifier {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
         _bookingErrorMessage = "Người dùng chưa đăng nhập";
-        _isLoadingBookings = false;
+        _isLoading = false;
         notifyListeners();
         return;
       }
@@ -94,10 +153,11 @@ class BookingProvider extends ChangeNotifier {
       _bookings = allBookings;
       print( currentUser.uid);
     } catch (e) {
+      _isLoading = false;
       debugPrint('[Booking] Load bookings THẤT BẠI: $e');
       _bookingErrorMessage = "Không thể tải danh sách chuyến đi";
     } finally {
-      _isLoadingBookings = false;
+      _isLoading = false;
       notifyListeners();
     }
   }
