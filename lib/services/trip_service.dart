@@ -13,6 +13,13 @@ import '../models/booking_model.dart';
 class TripService {
   final _client = Supabase.instance.client;
 
+  SupabaseClient _authClient(String token) => SupabaseClient(
+    dotenv.env['SUPABASE_URL']!,
+    dotenv.env['SUPABASE_ANON_KEY']!,
+    headers: {'Authorization': 'Bearer $token'},
+  );
+
+
   /// Lấy tất cả chuyến đi có status = 'open' từ Supabase
   Future<List<TripModel>> fetchOpenTrips() async {
     final response = await _client
@@ -56,17 +63,29 @@ class TripService {
   }
   Future<void> createTrip(TripModel trip, String idToken) async {
     try {
-      // Tạo một client tạm thời có header xác thực từ Firebase để vượt qua RLS
-      final authenticatedClient = SupabaseClient(
-        dotenv.env['SUPABASE_URL']!,
-        dotenv.env['SUPABASE_ANON_KEY']!,
-        headers: {'Authorization': 'Bearer $idToken'},
-      );
-
-      await authenticatedClient.from('trips').insert(trip.toMap());
+      await _authClient(idToken).from('trips').insert(trip.toMap());
     } catch (e) {
       debugPrint('Failed to create trip: $e');
       rethrow;
     }
+  }
+  Future<void> updateTrip({required String tripId, required int seatsReduce, required String idToken}) async {
+    try{
+      await _authClient(idToken).rpc('book_trip_and_update_seats', params: {'p_trip_id': tripId, 'p_seats_to_reduce': seatsReduce});
+    }catch(e){
+      debugPrint('Failed to update trip: $e');
+      rethrow;
+    }
+  }
+
+  /// Lấy thông tin chi tiết của một chuyến đi theo ID
+  Future<TripModel> fetchTripById(String tripId) async {
+    final response = await _client
+        .from('trips')
+        .select('*, profiles(user_name, license_plate)')
+        .eq('id', tripId)
+        .single();
+
+    return TripModel.fromJson(response);
   }
 }

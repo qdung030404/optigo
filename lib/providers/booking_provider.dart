@@ -87,6 +87,8 @@ class BookingProvider extends ChangeNotifier {
 
   Future<void> createBooking(BookingModel booking) async {
     _isLoading = true;
+    _isSuccess = false;
+    _bookingErrorMessage = null;
     notifyListeners();
     final currentUser = FirebaseAuth.instance.currentUser!;
     final idToken = await currentUser.getIdToken();
@@ -97,8 +99,8 @@ class BookingProvider extends ChangeNotifier {
       headers: {'Authorization': 'Bearer $idToken'},
     );
 
-    // Bước 1: Đảm bảo profile tồn tại
     try {
+      // Đảm bảo profile tồn tại
       await supabase.from('profiles').upsert(
         {
           'id': currentUser.uid,
@@ -107,20 +109,31 @@ class BookingProvider extends ChangeNotifier {
         },
         onConflict: 'id',
       );
+
+      // Gọi RPC kiểm tra & cập nhật seats
+      await _tripService.updateTrip(
+        tripId: booking.tripId,
+        seatsReduce: passengerCount,
+        idToken: idToken!,
+      );
+
+      // Insert booking
+      await supabase.from('bookings').insert(booking.toMap());
+      _isSuccess = true;
+
+    } on PostgrestException catch (e) {
+      if (e.message.contains('seat_full')) {
+        _bookingErrorMessage = 'seat_full';
+      } else if (e.message.contains('not_enough_seats')) {
+        _bookingErrorMessage = 'not_enough_seats';
+      } else {
+        _bookingErrorMessage = 'Đặt chuyến thất bại';
+      }
     } catch (e) {
-      debugPrint('[Booking] Profile upsert THẤT BẠI: $e');
-      _isLoading = false;
-    }finally{
+      _bookingErrorMessage = 'Đã có lỗi xảy ra, vui lòng thử lại';
+    } finally {
       _isLoading = false;
       notifyListeners();
-    }
-
-    // Bước 2: Tạo booking
-    try {
-      await supabase.from('bookings').insert(booking.toMap());
-    } catch (e) {
-      debugPrint('[Booking] Booking insert THẤT BẠI: $e');
-      rethrow;
     }
   }
 
@@ -151,10 +164,8 @@ class BookingProvider extends ChangeNotifier {
         client: supabase,
       );
       _bookings = allBookings;
-      print( currentUser.uid);
     } catch (e) {
       _isLoading = false;
-      debugPrint('[Booking] Load bookings THẤT BẠI: $e');
       _bookingErrorMessage = "Không thể tải danh sách chuyến đi";
     } finally {
       _isLoading = false;
