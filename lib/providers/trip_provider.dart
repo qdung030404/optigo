@@ -139,6 +139,15 @@ class TripProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  Future<TripModel?> getTripById(String id) async {
+    try {
+      return await _tripService.fetchTripById(id);
+    } catch (e) {
+      debugPrint('Error fetching trip by ID: $e');
+      return null;
+    }
+  }
+
   @override
   void dispose() {
     searchController.removeListener(_onSearchChanged);

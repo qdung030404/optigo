@@ -7,7 +7,13 @@ class RouteDetailsCard extends StatelessWidget {
   final TripModel trip;
   final String? selectedPickupPoint;
   final VoidCallback onPickupTap;
-  const RouteDetailsCard({super.key, required this.trip, this.selectedPickupPoint, required this.onPickupTap});
+
+  const RouteDetailsCard({
+    super.key,
+    required this.trip,
+    this.selectedPickupPoint,
+    required this.onPickupTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +35,11 @@ class RouteDetailsCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.alt_route_rounded, color: const Color(0xff176bac), size: 24.sp),
+              Icon(
+                Icons.alt_route_rounded,
+                color: const Color(0xff176bac),
+                size: 24.sp,
+              ),
               SizedBox(width: 12.w),
               Text(
                 'Chi tiết lộ trình',
@@ -56,6 +66,7 @@ class RouteDetailsCard extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildLocationInput({
     required String label,
     required String placeholder,
@@ -64,12 +75,11 @@ class RouteDetailsCard extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         SizedBox(width: 16.w),
         Expanded(
           child: InkWell(
             onTap: onTap,
-            child:  Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -82,7 +92,10 @@ class RouteDetailsCard extends StatelessWidget {
                 SizedBox(height: 4.h),
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 14.h,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF1F4F9),
                     borderRadius: BorderRadius.circular(12.r),
@@ -98,7 +111,7 @@ class RouteDetailsCard extends StatelessWidget {
                 ),
               ],
             ),
-          )
+          ),
         ),
       ],
     );

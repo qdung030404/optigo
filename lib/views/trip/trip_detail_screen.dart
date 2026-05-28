@@ -9,10 +9,11 @@ import 'package:optigo/models/trip_model.dart';
 import 'package:optigo/providers/map_provider.dart';
 import 'package:optigo/providers/trip_provider.dart';
 import 'package:optigo/utils/route_matcher.dart';
-import 'package:optigo/views/trip/widget/departure_time_card.dart';
-import 'package:optigo/views/trip/widget/driver_infomation_card.dart';
-import 'package:optigo/views/trip/widget/pickup_points_bottom_sheet.dart';
-import 'package:optigo/views/trip/widget/route_details_card.dart';
+import 'package:optigo/views/trip/widget/trip_detail_widget/departure_time_card.dart';
+import 'package:optigo/views/trip/widget/trip_detail_widget/driver_infomation_card.dart';
+import 'package:optigo/views/trip/widget/trip_detail_widget/notify_dialog.dart';
+import 'package:optigo/views/trip/widget/trip_detail_widget/pickup_points_bottom_sheet.dart';
+import 'package:optigo/views/trip/widget/trip_detail_widget/route_details_card.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/booking_provider.dart';
@@ -25,58 +26,57 @@ class TripDetailScreen extends StatefulWidget {
 }
 
 class _TripDetailScreenState extends State<TripDetailScreen> {
+  TripModel? _liveTrip;
   String? selectedName;
   LatLng? _selectedPickupPoint;
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_liveTrip == null) {
+      _liveTrip = ModalRoute.of(context)!.settings.arguments as TripModel;
+      _refreshData();
+    }
+  }
+  Future<void> _refreshData() async {
+    final updated = await context.read<TripProvider>().getTripById(_liveTrip!.id!);
+    if (updated != null && mounted) {
+      setState(() {
+        _liveTrip = updated;
+      });
+    }
+  }
   void _showSuccessDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: NotifyDialog(
+          icon: Icons.check_circle,
+          title: 'đặt chuyến thành công',
+          textButton: 'Quản lý chuyến đi',
+          onPressed: () =>
+              Navigator.popUntil(context, ModalRoute.withName(Routes.home)),
         ),
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.check_circle,
-                color: const Color(0xff176bac),
-                size: 80.sp,
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'đặt chuyến thành công',
-                style: GoogleFonts.lexend(
-                  fontSize: 16.sp,
-                  color: Colors.grey[600],
-                ),
-              ),
-              SizedBox(height: 20.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xfffedd59),
-                    foregroundColor: Color(0xff176bac),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  onPressed: () {
-                    Navigator.popUntil(context, ModalRoute.withName(Routes.home));
-                  },
-                  child: Text(
-                      'Quay về trang chủ'
-                  ),
-                ),
-              ),
-            ],
-          ),
+      ),
+    );
+  }
+
+  void _showBookingErrorDialog({required String errorTitle}) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: NotifyDialog(
+          icon: Icons.error_rounded,
+          title: errorTitle,
+          textButton: 'Tìm chuyến khác',
+          onPressed: () {
+            Navigator.pop(context);
+            context.read<TripProvider>().loadAllTrips();
+          },
         ),
       ),
     );
@@ -84,9 +84,9 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bookingProvider = context.read<BookingProvider>();
+    final bookingProvider = context.watch<BookingProvider>();
     final tripProvider = context.read<TripProvider>();
-    final trip = ModalRoute.of(context)!.settings.arguments as TripModel;
+    final trip = _liveTrip!;
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FB),
       appBar: AppBar(
@@ -147,41 +147,63 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
             // Departure Time Card
             DepartureTimeCard(trip: trip),
             SizedBox(height: 16.h),
-             DriverInfomationCard(
+            DriverInfomationCard(
               driverName: trip.driverName ?? '',
               driverLicensePlate: trip.driverLicensePlate ?? '',
+              availableSeat: trip.availableSeats.toString(),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: Padding(padding: EdgeInsets.all(16.sp),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.all(16.sp),
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: bookingProvider.isLoading ? null : () async {
-              final bookingData = BookingModel(
-                passengerId: FirebaseAuth.instance.currentUser?.uid ?? '',
-                tripId: trip.id!,
-                pickupLocation: selectedName,
-                pickupLat: _selectedPickupPoint?.latitude,
-                pickupLng: _selectedPickupPoint?.longitude,
-                dropOffLocation: tripProvider.searchCtrl.text,
-                numberOfPassengers: bookingProvider.passengerCount,
-                totalFare: trip.price * bookingProvider.passengerCount,
-                paymentMethod: bookingProvider.paymentMethod,
-                note: bookingProvider.note,
-                status: 'confirmed',
-                createdAt: DateTime.now(),
-              );
-              try {
-                await bookingProvider.createBooking(bookingData);
-                _showSuccessDialog(); // chỉ mở khi thành công
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Đặt chuyến thất bại: $e')),
-                );
-              }
-            },
+            onPressed: bookingProvider.isLoading
+                ? null
+                : () async {
+                    final bookingData = BookingModel(
+                      passengerId: FirebaseAuth.instance.currentUser?.uid ?? '',
+                      tripId: trip.id!,
+                      pickupLocation: selectedName,
+                      pickupLat: _selectedPickupPoint?.latitude,
+                      pickupLng: _selectedPickupPoint?.longitude,
+                      dropOffLocation: tripProvider.searchCtrl.text,
+                      numberOfPassengers: bookingProvider.passengerCount,
+                      totalFare: trip.price * bookingProvider.passengerCount,
+                      paymentMethod: bookingProvider.paymentMethod,
+                      note: bookingProvider.note,
+                      status: 'confirmed',
+                      createdAt: DateTime.now(),
+                    );
+                    try {
+                      await bookingProvider.createBooking(bookingData);
+                      if (!mounted) return;
+                      if (bookingProvider.bookingErrorMessage == 'seat_full') {
+                        _showBookingErrorDialog(
+                          errorTitle:
+                              'Rất tiếc! Chuyến này vừa hết chỗ trống.\n'
+                              'Vui lòng tìm chuyến khác.',
+                        );
+                      } else if (bookingProvider.bookingErrorMessage == 'not_enough_seats') {
+                        final updatedTrip = await tripProvider.getTripById(trip.id!);
+                        if (!mounted) return;
+                        _showBookingErrorDialog(
+                          errorTitle:
+                              'Rất tiếc! Chuyến này hiện chỉ còn ${updatedTrip?.availableSeats ?? trip.availableSeats} chỗ trống.\n'
+                              'Vui lòng điều chỉnh lại số lượng hành khách.',
+                        );
+                      } else if (bookingProvider.isSuccess) {
+                        _showSuccessDialog();
+                      }
+                      // chỉ mở khi thành công
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Đặt chuyến thất bại: $e')),
+                      );
+                    }
+                  },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xfffedd59),
               foregroundColor: const Color(0xff176bac),
@@ -191,13 +213,22 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
               ),
               elevation: 0,
             ),
-            child: Text(
-              'Đặt chuyến',
-              style: GoogleFonts.lexend(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: bookingProvider.isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xff176bac),
+                    ),
+                  )
+                : Text(
+                    'Đặt chuyến',
+                    style: GoogleFonts.lexend(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ),
         ),
       ),
