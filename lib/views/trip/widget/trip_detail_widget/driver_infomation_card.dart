@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-import 'package:optigo/models/trip_model.dart';
 
-class DepartureTimeCard extends StatefulWidget {
-  final TripModel trip;
-  const DepartureTimeCard({super.key, required this.trip,});
+class DriverInfomationCard extends StatelessWidget {
+  final String driverName;
+  final String driverLicensePlate;
+  final String availableSeat;
 
-  @override
-  State<DepartureTimeCard> createState() => _DepartureTimeCardState();
-}
-
-class _DepartureTimeCardState extends State<DepartureTimeCard> {
+  const DriverInfomationCard({
+    super.key,
+    required this.driverName,
+    required this.driverLicensePlate,
+    required this.availableSeat,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +35,14 @@ class _DepartureTimeCardState extends State<DepartureTimeCard> {
         children: [
           Row(
             children: [
-              Icon(Icons.calendar_today_rounded, color: const Color(0xff176bac), size: 24.sp),
+              FaIcon(
+                FontAwesomeIcons.addressCard,
+                color: const Color(0xff176bac),
+                size: 24.sp,
+              ),
               SizedBox(width: 12.w),
               Text(
-                'Thời gian xuất phát',
+                'thông tin tài xế',
                 style: GoogleFonts.lexend(
                   fontSize: 20.sp,
                   fontWeight: FontWeight.bold,
@@ -47,43 +52,41 @@ class _DepartureTimeCardState extends State<DepartureTimeCard> {
             ],
           ),
           SizedBox(height: 24.h),
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _buildTimeInput(
-                  label: 'Ngày',
-                  placeholder: DateFormat('dd/MM/yyyy').format(widget.trip.departureTime),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: _buildTimeInput(
-                  label: 'Giờ khởi hành',
-                  placeholder: DateFormat('HH:mm').format(widget.trip.departureTime),
-                ),
+              _buildDriverInfo('Họ và tên', driverName),
+              SizedBox(height: 16.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDriverInfo('Biển số xe', driverLicensePlate),
+                  ),
+                  SizedBox(width: 16.w),
+                  Expanded(
+                    child: _buildDriverInfo('Số ghế trống', availableSeat),
+                  ),
+                ],
               ),
             ],
           ),
         ],
-      )
+      ),
     );
   }
 
-  Widget _buildTimeInput({
-    required String label,
-    required String placeholder,
-  }) {
+  Widget _buildDriverInfo(String title, String content) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          title,
           style: GoogleFonts.lexend(
-            fontSize: 13.sp,
-            color: Colors.grey[600],
+            fontSize: 14.sp,
+            fontWeight: FontWeight.normal,
           ),
         ),
-        SizedBox(height: 4.h),
+        SizedBox(height: 8.h),
         Container(
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
@@ -92,10 +95,11 @@ class _DepartureTimeCardState extends State<DepartureTimeCard> {
             borderRadius: BorderRadius.circular(12.r),
           ),
           child: Text(
-            placeholder,
+            content,
             style: GoogleFonts.lexend(
-              fontSize: 15.sp,
-              color: Colors.grey[500],
+              color: Colors.grey[600],
+              fontSize: 20.sp,
+              fontWeight: FontWeight.normal,
             ),
           ),
         ),
