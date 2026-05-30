@@ -3,9 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CardHeader extends StatelessWidget {
+  final bool isReadOnly;
   final String code;
   final String status;
-  const CardHeader({super.key, required this.code, required this.status});
+  const CardHeader({super.key, required this.code, required this.status, this.isReadOnly = false});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,7 @@ class CardHeader extends StatelessWidget {
               Text(
                 code,
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: isReadOnly == true ? 16.sp : 24.sp,
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF1A1A1A),
                 ),
