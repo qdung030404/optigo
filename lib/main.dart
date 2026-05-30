@@ -12,6 +12,7 @@ import 'package:optigo/providers/trip_provider.dart';
 import 'package:optigo/views/auth/login_screen.dart';
 import 'package:optigo/views/auth/otp_screen.dart';
 import 'package:optigo/views/auth/set_user_name.dart';
+import 'package:optigo/views/booking/booking_detail_screen.dart';
 import 'package:optigo/views/booking/booking_manager.dart';
 import 'package:optigo/views/driver/post_a_trip/create_trip.dart';
 import 'package:optigo/views/home/home_screen.dart';
@@ -72,6 +73,7 @@ class MyApp extends StatelessWidget {
               Routes.tripDetail: (ctx) => TripDetailScreen(),
               Routes.bookingManager: (ctx) => BookingManager(),
               Routes.createTrip: (ctx) => CreateTrip(),
+              Routes.bookingDetail: (ctx) => BookingDetailScreen(),
             },
           );
         }),

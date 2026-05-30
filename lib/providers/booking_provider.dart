@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:optigo/services/trip_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/booking_model.dart';
 
@@ -29,6 +29,7 @@ class BookingProvider extends ChangeNotifier {
   String get note => _note;
   bool get showBookingBottomSheet => _showBookingBottomSheet;
 
+  final currentUser = FirebaseAuth.instance.currentUser;
   void setShowBookingBottomSheet(bool value) {
     _showBookingBottomSheet = value;
     notifyListeners();
@@ -90,37 +91,28 @@ class BookingProvider extends ChangeNotifier {
     _isSuccess = false;
     _bookingErrorMessage = null;
     notifyListeners();
-    final currentUser = FirebaseAuth.instance.currentUser!;
-    final idToken = await currentUser.getIdToken();
-
-    final supabase = SupabaseClient(
-      dotenv.env['SUPABASE_URL']!,
-      dotenv.env['SUPABASE_ANON_KEY']!,
-      headers: {'Authorization': 'Bearer $idToken'},
-    );
 
     try {
-      // Đảm bảo profile tồn tại
-      await supabase.from('profiles').upsert(
-        {
-          'id': currentUser.uid,
-          'phone': currentUser.phoneNumber ?? '',
-          'updated_at': DateTime.now().toIso8601String(),
-        },
-        onConflict: 'id',
-      );
+      final idToken = await currentUser?.getIdToken();
+      if (idToken == null) throw Exception("Người dùng chưa đăng nhập");
+      await TripService.authClient(idToken).from('profiles').upsert({
+        'id': currentUser?.uid,
+        'phone': currentUser?.phoneNumber ?? '',
+        'updated_at': DateTime.now().toIso8601String(),
+      }, onConflict: 'id');
 
       // Gọi RPC kiểm tra & cập nhật seats
       await _tripService.updateTrip(
         tripId: booking.tripId,
         seatsReduce: passengerCount,
-        idToken: idToken!,
+        idToken: idToken,
       );
 
       // Insert booking
-      await supabase.from('bookings').insert(booking.toMap());
+      await TripService.authClient(
+        idToken,
+      ).from('bookings').insert(booking.toMap());
       _isSuccess = true;
-
     } on PostgrestException catch (e) {
       if (e.message.contains('seat_full')) {
         _bookingErrorMessage = 'seat_full';
@@ -144,7 +136,6 @@ class BookingProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
         _bookingErrorMessage = "Người dùng chưa đăng nhập";
         _isLoading = false;
@@ -152,21 +143,58 @@ class BookingProvider extends ChangeNotifier {
         return;
       }
 
-      final idToken = await currentUser.getIdToken();
-      final supabase = SupabaseClient(
-        dotenv.env['SUPABASE_URL']!,
-        dotenv.env['SUPABASE_ANON_KEY']!,
-        headers: {'Authorization': 'Bearer $idToken'},
-      );
-
+      final idToken = await currentUser?.getIdToken();
+      if (idToken == null) throw Exception("Người dùng chưa đăng nhập");
       final List<BookingModel> allBookings = await _tripService.fetchBookings(
-        currentUser.uid,
-        client: supabase,
+        currentUser!.uid,
+        client: TripService.authClient(idToken),
       );
       _bookings = allBookings;
     } catch (e) {
       _isLoading = false;
       _bookingErrorMessage = "Không thể tải danh sách chuyến đi";
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+  Future<void> contactDriver(String phoneNumber) async {
+    String cleanNumber = phoneNumber.replaceAll(RegExp(r'\s+'), '');
+    if (cleanNumber.startsWith('+84')) {
+      cleanNumber = '0${cleanNumber.substring(3)}';
+    }
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: cleanNumber,
+    );
+
+    //Kiểm tra xem thiết bị có thể mở ứng dụng gọi điện không
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    } else {
+      //Xử lý lỗi nếu thiết bị không hỗ trợ (ví dụ: máy tính bảng không có SIM)
+      debugPrint('Không thể mở ứng dụng gọi điện với số: $cleanNumber');
+    }
+  }
+  Future<void> cancelBooking(BookingModel booking) async {
+    if (booking.id == null) return;
+
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final idToken = await currentUser?.getIdToken();
+      if (idToken == null) throw Exception("Người dùng chưa đăng nhập");
+      await _tripService.deleteBooking(
+        tripId: booking.tripId,
+        bookingId: booking.id!,
+        seatsReturn: booking.numberOfPassengers,
+        idToken: idToken,
+
+      );
+      _bookings.removeWhere((b) => b.id == booking.id);
+    } catch (e) {
+      debugPrint('Error canceling booking: $e');
+      _bookingErrorMessage = "Không thể hủy chuyến đi. Vui lòng thử lại.";
     } finally {
       _isLoading = false;
       notifyListeners();

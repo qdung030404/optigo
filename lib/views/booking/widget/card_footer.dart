@@ -8,27 +8,17 @@ class CardFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.2),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20.r),
-          bottomRight: Radius.circular(20.r),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildInfoItem(Icons.calendar_today_outlined, 'Ngày đi', date),
+        Container(
+          width: 1,
+          height: 25,
+          color: Colors.grey.withOpacity(0.5),
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildInfoItem(Icons.calendar_today_outlined, 'Ngày đi', date),
-          Container(
-            width: 1,
-            height: 25,
-            color: Colors.grey.withOpacity(0.5),
-          ),
-          _buildInfoItem(Icons.access_time, 'Thời gian', time),
-        ],
-      ),
+        _buildInfoItem(Icons.access_time, 'Thời gian', time),
+      ],
     );
   }
   Widget _buildInfoItem(IconData icon, String label, String value) {

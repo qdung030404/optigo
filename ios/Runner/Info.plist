@@ -68,5 +68,10 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
     <string>[Explain why the app needs the user's location]</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>sms</string>
+      <string>tel</string>
+    </array>
 </dict>
 </plist>

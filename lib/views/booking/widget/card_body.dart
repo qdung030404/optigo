@@ -88,7 +88,7 @@ class CardBody extends StatelessWidget {
           child: Text(
             pickup,
             style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
-            maxLines: 1,
+            maxLines:3,
           ),
         ),
       ],

@@ -10,4 +10,5 @@ class Routes {
   static const tripDetail = 'trip_detail';
   static const bookingManager = 'booking_manager';
   static const createTrip = 'create_trip';
+  static const bookingDetail = 'booking_detail';
 }

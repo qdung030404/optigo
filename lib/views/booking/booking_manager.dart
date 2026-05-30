@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:optigo/models/trip_model.dart';
 import 'package:optigo/providers/booking_provider.dart';
 import 'package:optigo/providers/trip_provider.dart';
+import 'package:optigo/utils/address_utils.dart';
 import 'package:optigo/views/booking/widget/card_body.dart';
 import 'package:optigo/views/booking/widget/card_footer.dart';
 import 'package:optigo/views/booking/widget/card_header.dart';
@@ -105,7 +106,16 @@ class _BookingManagerState extends State<BookingManager> {
                   pickup: booking.pickupLocation!,
                   date: DateFormat('dd/MM/yyyy').format(trip.departureTime),
                   time: DateFormat('HH:mm').format(trip.departureTime),
-                  status: booking.status, driverName: trip.driverName?.toString() ?? '', driverLicensePlate: trip.driverLicensePlate?.toString() ?? '',
+                  status: booking.status, driverName: trip.driverName?.toString() ?? '',
+                  driverLicensePlate: trip.driverLicensePlate?.toString() ?? '',
+                  onTap: () =>  Navigator.pushNamed(
+                    context,
+                    Routes.bookingDetail,
+                    arguments: {
+                      'booking': booking,
+                      'trip': trip,
+                    },
+                  ),
                 );
               },
             ),
@@ -159,36 +169,50 @@ class _BookingManagerState extends State<BookingManager> {
     required String status,
     required String driverName,
     required String driverLicensePlate,
+    required VoidCallback onTap,
   }) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Phần Header: Mã đặt vé và Trạng thái
-          CardHeader(code: code, status: status),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Phần Header: Mã đặt vé và Trạng thái
+            CardHeader(code: code, status: status, isReadOnly: true,),
 
-          // Đường gạch đứt phân cách nhẹ
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            child: Divider(height: 1, color: Colors.grey[100]),
-          ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: Divider(height: 1, color: Colors.grey[100]),
+            ),
 
-          CardBody(from: from, to: to, pickup: pickup),
-          DriverInfomation(driverName: driverName, driverLicensePlate: driverLicensePlate,),
-          // Phần Footer: Thông tin thời gian
-          CardFooter(date: date, time: time),
-        ],
+            CardBody(from: AddressUtils.getLast(from), to: AddressUtils.getLast(to), pickup: pickup,),
+            DriverInfomation(driverName: driverName, driverLicensePlate: driverLicensePlate, isReadOnly: true,),
+            // Phần Footer: Thông tin thời gian
+            Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.2),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(20.r),
+                  bottomRight: Radius.circular(20.r),
+                ),
+              ),
+              child: CardFooter(date: date, time: time),
+            )
+
+          ],
+        ),
       ),
     );
   }
