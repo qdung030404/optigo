@@ -2,6 +2,7 @@ class TripModel {
   final String? id;
   final String driverId;
   final String? driverName;
+  final String? driverPhone;
   final String? driverLicensePlate;
   final String originName;
   final String destinationName;
@@ -20,6 +21,7 @@ class TripModel {
     this.id,
     required this.driverId,
     this.driverName,
+    this.driverPhone,
     this.driverLicensePlate,
     required this.originName,
     required this.destinationName,
@@ -43,6 +45,7 @@ class TripModel {
       id: map['id'],
       driverId: map['driver_id'] ?? '',
       driverName: profile?['user_name'],
+      driverPhone: profile?['phone'],
       driverLicensePlate: profile?['license_plate'],
       originName: map['origin_name'] ?? '',
       destinationName: map['destination_name'] ?? '',

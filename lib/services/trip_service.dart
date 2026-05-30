@@ -13,7 +13,7 @@ import '../models/booking_model.dart';
 class TripService {
   final _client = Supabase.instance.client;
 
-  SupabaseClient _authClient(String token) => SupabaseClient(
+  static SupabaseClient authClient(String token) => SupabaseClient(
     dotenv.env['SUPABASE_URL']!,
     dotenv.env['SUPABASE_ANON_KEY']!,
     headers: {'Authorization': 'Bearer $token'},
@@ -24,7 +24,7 @@ class TripService {
   Future<List<TripModel>> fetchOpenTrips() async {
     final response = await _client
         .from('trips')
-        .select('*, profiles(user_name, license_plate)')
+        .select('*, profiles(user_name, license_plate, phone)')
         .eq('status', 'open')
         .order('departure_time', ascending: true);
 
@@ -63,7 +63,7 @@ class TripService {
   }
   Future<void> createTrip(TripModel trip, String idToken) async {
     try {
-      await _authClient(idToken).from('trips').insert(trip.toMap());
+      await authClient(idToken).from('trips').insert(trip.toMap());
     } catch (e) {
       debugPrint('Failed to create trip: $e');
       rethrow;
@@ -71,18 +71,26 @@ class TripService {
   }
   Future<void> updateTrip({required String tripId, required int seatsReduce, required String idToken}) async {
     try{
-      await _authClient(idToken).rpc('book_trip_and_update_seats', params: {'p_trip_id': tripId, 'p_seats_to_reduce': seatsReduce});
+      await authClient(idToken).rpc('book_trip_and_update_seats', params: {'p_trip_id': tripId, 'p_seats_to_reduce': seatsReduce});
     }catch(e){
       debugPrint('Failed to update trip: $e');
       rethrow;
     }
   }
-
+  Future<void> deleteBooking({required String tripId, required int bookingId, required int seatsReturn, required String idToken}) async {
+    try {
+      await authClient(idToken).rpc('cancel_booking_and_return_seats',
+          params: {'p_trip_id': tripId, 'p_booking_id': bookingId, 'p_seats_to_return': seatsReturn});
+    }catch (e) {
+      debugPrint('Failed to delete booking: $e');
+      rethrow;
+    }
+  }
   /// Lấy thông tin chi tiết của một chuyến đi theo ID
   Future<TripModel> fetchTripById(String tripId) async {
     final response = await _client
         .from('trips')
-        .select('*, profiles(user_name, license_plate)')
+        .select('*, profiles(user_name, license_plate, phone)')
         .eq('id', tripId)
         .single();
 
