@@ -3,13 +3,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:optigo/models/trip_model.dart';
+import 'package:optigo/utils/address_utils.dart';
 
 class TripListCard extends StatelessWidget {
   final TripModel trip;
   const TripListCard({super.key, required this.trip});
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+    final currencyFormat = NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ');
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.w),
@@ -26,6 +27,17 @@ class TripListCard extends StatelessWidget {
       ),
       child: Column(
         children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              currencyFormat.format(trip.price),
+              style: GoogleFonts.lexend(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xff176bac),
+              ),
+            ),
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -38,7 +50,7 @@ class TripListCard extends StatelessWidget {
                   ),
                   Container(
                     width: 1.w,
-                    height: 30.h,
+                    height: MediaQuery.of(context).size.width *0.15,
                     color: Colors.grey[300],
                   ),
                   Icon(
@@ -53,30 +65,10 @@ class TripListCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      trip.originName,
-                      style: GoogleFonts.lexend(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    _buildLocation(fullAddress: trip.originName),
                     SizedBox(height: 25.h),
-                    Text(
-                      trip.destinationName,
-                      style: GoogleFonts.lexend(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    _buildLocation(fullAddress: trip.destinationName),
                   ],
-                ),
-              ),
-              Text(
-                currencyFormat.format(trip.price),
-                style: GoogleFonts.lexend(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xff176bac),
                 ),
               ),
             ],
@@ -126,5 +118,28 @@ class TripListCard extends StatelessWidget {
         ],
       ),
     );
+  }
+  Widget _buildLocation({required String fullAddress}){
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AddressUtils.getLast(fullAddress),
+          style: GoogleFonts.lexend(
+            color: Color(0xff176bac),
+            fontSize: 16.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          AddressUtils.getFullAddress(fullAddress),
+          style: GoogleFonts.lexend(
+            fontSize: 10.sp,
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+      ]
+    );
+
   }
 }
