@@ -97,6 +97,7 @@ class _BookingManagerState extends State<BookingManager> {
                     availableSeats: 0,
                     departureTime: DateTime.now(),
                     status: '',
+                    totalSeats: 0,
                   ),
                 );
                 return _buildTripCard(

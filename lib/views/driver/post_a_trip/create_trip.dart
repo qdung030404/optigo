@@ -153,6 +153,7 @@ class _CreateTripState extends State<CreateTrip> {
                           destinationLng: destinationLatLng!.longitude,
                           routePolyline: polyline,
                           price: price!,
+                          totalSeats: seats!,
                           availableSeats: seats!,
                           departureTime: departureTime!,
                           status: 'open',

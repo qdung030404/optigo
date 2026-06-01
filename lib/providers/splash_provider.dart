@@ -36,11 +36,8 @@ class SplashProvider extends ChangeNotifier {
         ]);
 
         final role = authProvider.user?.role;
-        nextRoute = role == UserRole.driver ?  Routes.home : Routes.home;
-        print(role);
-        if (role == UserRole.driver) {
-          nextRoute = Routes.createTrip;
-        }
+        nextRoute = role == UserRole.driver ?  Routes.driverHome : Routes.home;
+
       } else if (authProvider.status == AuthStatus.unregistered) {
         nextRoute = Routes.setUserName;
       } else {

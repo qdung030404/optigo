@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:optigo/models/trip_model.dart';
 import 'package:optigo/utils/address_utils.dart';
+import 'package:optigo/widgets/build_widget.dart';
 
 class TripListCard extends StatelessWidget {
   final TripModel trip;
@@ -65,9 +66,9 @@ class TripListCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildLocation(fullAddress: trip.originName),
+                    BuildWidget.buildLocation(fullAddress: trip.originName),
                     SizedBox(height: 25.h),
-                    _buildLocation(fullAddress: trip.destinationName),
+                    BuildWidget.buildLocation(fullAddress: trip.destinationName),
                   ],
                 ),
               ),
@@ -118,28 +119,5 @@ class TripListCard extends StatelessWidget {
         ],
       ),
     );
-  }
-  Widget _buildLocation({required String fullAddress}){
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          AddressUtils.getLast(fullAddress),
-          style: GoogleFonts.lexend(
-            color: Color(0xff176bac),
-            fontSize: 16.sp,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          AddressUtils.getFullAddress(fullAddress),
-          style: GoogleFonts.lexend(
-            fontSize: 10.sp,
-            fontWeight: FontWeight.normal,
-          ),
-        ),
-      ]
-    );
-
   }
 }

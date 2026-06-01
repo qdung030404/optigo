@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/booking_model.dart';
+import '../services/booking_service.dart';
 
 class BookingProvider extends ChangeNotifier {
   bool _isSuccess = false;
@@ -13,6 +14,7 @@ class BookingProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isSuccess => _isSuccess;
   final _tripService = TripService();
+  final _bookingService = BookingService();
   bool _isNow = false;
   bool _isTimeSelected = false;
   DateTime _selectedDate = DateTime.now();
@@ -145,7 +147,7 @@ class BookingProvider extends ChangeNotifier {
 
       final idToken = await currentUser?.getIdToken();
       if (idToken == null) throw Exception("Người dùng chưa đăng nhập");
-      final List<BookingModel> allBookings = await _tripService.fetchBookings(
+      final List<BookingModel> allBookings = await _bookingService.fetchBookings(
         currentUser!.uid,
         client: TripService.authClient(idToken),
       );
@@ -154,6 +156,28 @@ class BookingProvider extends ChangeNotifier {
       _isLoading = false;
       _bookingErrorMessage = "Không thể tải danh sách chuyến đi";
     } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+  Future<List<BookingModel>> loadBookingsForDriver(String driverId) async {
+    _isLoading = true;
+    _bookingErrorMessage = null;
+    _bookings = [];
+    Future.microtask(() => notifyListeners());
+    try{
+      final idToken = await currentUser?.getIdToken();
+      if (idToken == null) throw Exception("Người dùng chưa đăng nhập");
+      final  allBookings = await _bookingService.fetchBookingsForDriver(
+        driverId,
+        idToken,
+      );
+      return allBookings;
+    }catch(e){
+      _isLoading = false;
+      _bookingErrorMessage = "Không thể tải danh sách yêu cầu ghép chuyến";
+      return [];
+    }finally{
       _isLoading = false;
       notifyListeners();
     }
@@ -184,7 +208,7 @@ class BookingProvider extends ChangeNotifier {
     try {
       final idToken = await currentUser?.getIdToken();
       if (idToken == null) throw Exception("Người dùng chưa đăng nhập");
-      await _tripService.deleteBooking(
+      await _bookingService.deleteBooking(
         tripId: booking.tripId,
         bookingId: booking.id!,
         seatsReturn: booking.numberOfPassengers,

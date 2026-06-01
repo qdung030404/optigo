@@ -147,6 +147,23 @@ class TripProvider extends ChangeNotifier {
       return null;
     }
   }
+  Future<List<TripModel>> loadTripsByDriverId(String driverId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    Future.microtask(() => notifyListeners());
+    try{
+      final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if (idToken == null) throw Exception("User not authenticated");
+      final trips = await _tripService.fetchTripsByDriverId(driverId, idToken);
+      return trips;
+    }catch(e){
+      _errorMessage = e.toString();
+      return [];
+    }finally{
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   @override
   void dispose() {
