@@ -6,6 +6,7 @@ import 'package:optigo/models/trip_model.dart';
 class RouteDetailsCard extends StatelessWidget {
   final TripModel trip;
   final String? selectedPickupPoint;
+  final String? destinationPoint;
   final VoidCallback onPickupTap;
 
   const RouteDetailsCard({
@@ -13,6 +14,7 @@ class RouteDetailsCard extends StatelessWidget {
     required this.trip,
     this.selectedPickupPoint,
     required this.onPickupTap,
+    this.destinationPoint,
   });
 
   @override
@@ -60,7 +62,7 @@ class RouteDetailsCard extends StatelessWidget {
           SizedBox(height: 16.h),
           _buildLocationInput(
             label: 'Điểm đến',
-            placeholder: trip.destinationName,
+            placeholder: destinationPoint ?? trip.destinationName,
           ),
         ],
       ),
