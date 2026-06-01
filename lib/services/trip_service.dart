@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -30,13 +31,6 @@ class TripService {
 
     return (response as List)
         .map((json) => TripModel.fromJson(json))
-        .toList();
-  }
-  Future<List<BookingModel>> fetchBookings(String passengerId, {SupabaseClient? client}) async {
-    final supabaseClient = client ?? _client;
-    final response = await supabaseClient.from('bookings').select().eq('passenger_id', passengerId);
-    return (response as List)
-        .map((json) => BookingModel.fromJson(json))
         .toList();
   }
   Future<String?> getRoutePolyline(LatLng origin, LatLng destination) async {
@@ -77,15 +71,6 @@ class TripService {
       rethrow;
     }
   }
-  Future<void> deleteBooking({required String tripId, required int bookingId, required int seatsReturn, required String idToken}) async {
-    try {
-      await authClient(idToken).rpc('cancel_booking_and_return_seats',
-          params: {'p_trip_id': tripId, 'p_booking_id': bookingId, 'p_seats_to_return': seatsReturn});
-    }catch (e) {
-      debugPrint('Failed to delete booking: $e');
-      rethrow;
-    }
-  }
   /// Lấy thông tin chi tiết của một chuyến đi theo ID
   Future<TripModel> fetchTripById(String tripId) async {
     final response = await _client
@@ -96,4 +81,19 @@ class TripService {
 
     return TripModel.fromJson(response);
   }
+  Future<List<TripModel>> fetchTripsByDriverId(String driverId, String idToken) async {
+    try {
+      final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if (token == null) throw Exception('User not authenticated');
+      final response = await authClient(token)
+          .from('trips')
+          .select()
+          .eq('driver_id', driverId);
+      return (response as List).map((json) => TripModel.fromJson(json)).toList();
+    } catch (e) {
+      debugPrint('Lỗi: $e');
+      return [];
+    }
+  }
+
 }
