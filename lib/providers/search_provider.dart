@@ -89,7 +89,7 @@ class SearchProvider extends ChangeNotifier {
   /// Lấy tọa độ chi tiết từ Place ID
   Future<Map<String, double>?> getPlaceDetail(String placeId) async {
     final url =
-        'https://rsapi.goong.io/Place/Detail?api_key=$apiKey&place_id=$placeId';
+        'https://rsapi.goong.io/place/detail?api_key=$apiKey&place_id=$placeId';
 
     try {
       final response = await http.get(Uri.parse(url));

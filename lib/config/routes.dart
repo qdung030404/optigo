@@ -11,4 +11,5 @@ class Routes {
   static const bookingManager = 'booking_manager';
   static const createTrip = 'create_trip';
   static const bookingDetail = 'booking_detail';
+  static const driverHome = 'driver_home';
 }
