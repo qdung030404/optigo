@@ -38,14 +38,18 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
       _refreshData();
     }
   }
+
   Future<void> _refreshData() async {
-    final updated = await context.read<TripProvider>().getTripById(_liveTrip!.id!);
+    final updated = await context.read<TripProvider>().getTripById(
+      _liveTrip!.id!,
+    );
     if (updated != null && mounted) {
       setState(() {
         _liveTrip = updated;
       });
     }
   }
+
   void _showSuccessDialog() {
     showDialog(
       context: context,
@@ -63,7 +67,10 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
     );
   }
 
-  void _showBookingErrorDialog({required String errorTitle}) {
+  void _showBookingErrorDialog({
+    required String errorTitle,
+    required VoidCallback onPressed,
+  }) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -72,11 +79,8 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
         child: NotifyDialog(
           icon: Icons.error_rounded,
           title: errorTitle,
-          textButton: 'Tìm chuyến khác',
-          onPressed: () {
-            Navigator.pop(context);
-            context.read<TripProvider>().loadAllTrips();
-          },
+          textButton: 'Quay lại',
+          onPressed: onPressed,
         ),
       ),
     );
@@ -114,6 +118,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
             RouteDetailsCard(
               trip: trip,
               selectedPickupPoint: selectedName,
+              destinationPoint: tripProvider.searchCtrl.text,
               onPickupTap: () async {
                 final mapProvider = context.read<MapProvider>();
                 if (mapProvider.currentLatLng != null &&
@@ -180,19 +185,39 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                     try {
                       await bookingProvider.createBooking(bookingData);
                       if (!mounted) return;
+                      if (selectedName == null) {
+                        _showBookingErrorDialog(
+                          errorTitle: 'Vui lòng chọn điểm đón',
+                          onPressed: () => Navigator.pop(context),
+                        );
+                        return;
+                      }
                       if (bookingProvider.bookingErrorMessage == 'seat_full') {
                         _showBookingErrorDialog(
                           errorTitle:
                               'Rất tiếc! Chuyến này vừa hết chỗ trống.\n'
                               'Vui lòng tìm chuyến khác.',
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            context.read<TripProvider>().loadAllTrips();
+                          },
                         );
-                      } else if (bookingProvider.bookingErrorMessage == 'not_enough_seats') {
-                        final updatedTrip = await tripProvider.getTripById(trip.id!);
+                      } else if (bookingProvider.bookingErrorMessage ==
+                          'not_enough_seats') {
+                        final updatedTrip = await tripProvider.getTripById(
+                          trip.id!,
+                        );
                         if (!mounted) return;
                         _showBookingErrorDialog(
                           errorTitle:
                               'Rất tiếc! Chuyến này hiện chỉ còn ${updatedTrip?.availableSeats ?? trip.availableSeats} chỗ trống.\n'
                               'Vui lòng điều chỉnh lại số lượng hành khách.',
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            context.read<TripProvider>().loadAllTrips();
+                          },
                         );
                       } else if (bookingProvider.isSuccess) {
                         _showSuccessDialog();

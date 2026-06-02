@@ -104,10 +104,11 @@ class _BookingManagerState extends State<BookingManager> {
                   from: trip.originName,
                   to: trip.destinationName,
                   code: booking.id.toString(),
-                  pickup: booking.pickupLocation!,
+                  pickup: booking.pickupLocation ?? 'Chưa xác định',
                   date: DateFormat('dd/MM/yyyy').format(trip.departureTime),
                   time: DateFormat('HH:mm').format(trip.departureTime),
-                  status: booking.status, driverName: trip.driverName?.toString() ?? '',
+                  status: booking.status,
+                  driverName: trip.driverName?.toString() ?? '',
                   driverLicensePlate: trip.driverLicensePlate?.toString() ?? '',
                   onTap: () =>  Navigator.pushNamed(
                     context,

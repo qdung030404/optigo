@@ -8,6 +8,7 @@ import 'package:optigo/providers/auth_provider.dart';
 import 'package:optigo/providers/booking_provider.dart';
 import 'package:optigo/providers/map_provider.dart';
 import 'package:optigo/providers/search_provider.dart';
+import 'package:optigo/providers/trip_provider.dart';
 import 'package:optigo/views/home/widget/build_drawer.dart';
 import 'package:optigo/views/home/widget/build_map.dart';
 import 'package:optigo/views/home/widget/location_input_box.dart';
@@ -52,6 +53,8 @@ class _HomeScreenState extends State<HomeScreen> {
         originController.text = result.description;
       } else {
         destinationController.text = result.description;
+        // Cập nhật vào TripProvider để TripDetailScreen có thể hiển thị
+        context.read<TripProvider>().searchCtrl.text = result.description;
       }
       // 2. Lấy tọa độ chi tiết và cập nhật bản đồ
       final searchProvider = context.read<SearchProvider>();
@@ -70,6 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mapProvider.getDirection();
         }
       }
+      context.read<TripProvider>().searchCtrl.text = result.description;
     }
   }
   @override
