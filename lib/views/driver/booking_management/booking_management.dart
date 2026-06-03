@@ -1,18 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:optigo/providers/booking_provider.dart';
+import 'package:optigo/views/driver/booking_management/widget/combine_trips_card.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/booking_model.dart';
 
-class BookingManagement extends StatefulWidget {
-  const BookingManagement({super.key});
+class CombineTripsManagement extends StatefulWidget {
+  const CombineTripsManagement({super.key});
 
   @override
-  State<BookingManagement> createState() => _BookingManagementState();
+  State<CombineTripsManagement> createState() => _CombineTripsManagementState();
 }
 
-class _BookingManagementState extends State<BookingManagement> {
+class _CombineTripsManagementState extends State<CombineTripsManagement> {
   late Future<List<BookingModel>> _driverBookingsFuture;
 
   @override
@@ -52,15 +53,7 @@ class _BookingManagementState extends State<BookingManagement> {
             itemCount: bookings.length,
             itemBuilder: (context, index) {
               final booking = bookings[index];
-              return Column(
-                children: [
-                  Text('Điểm đi: ${booking.pickupLocation}'),
-                  Text('Điểm đến: ${booking.dropOffLocation}'),
-                  Text('Thời gian đi: ${booking.totalFare}'),
-                  Text('Số chỗ ngồi: ${booking.numberOfPassengers}'),
-                  Text('Trạng thái: ${booking.status}'),
-                ],
-              );
+              return CombineTripsCard(booking: booking);
             },
           );
         },

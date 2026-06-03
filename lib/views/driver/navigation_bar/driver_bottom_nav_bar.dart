@@ -16,7 +16,7 @@ class _DriverBottomNavBarState extends State<DriverBottomNavBar> {
   final List<Widget> _pages = [
     ManageTrip(),
     CreateTrip(),
-    BookingManagement(),
+    CombineTripsManagement(),
   ];
 
   @override

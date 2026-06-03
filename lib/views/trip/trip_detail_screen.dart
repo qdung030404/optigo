@@ -90,6 +90,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
   Widget build(BuildContext context) {
     final bookingProvider = context.watch<BookingProvider>();
     final tripProvider = context.read<TripProvider>();
+    final mapProvider = context.read<MapProvider>();
     final trip = _liveTrip!;
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FB),
@@ -175,11 +176,15 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                       pickupLat: _selectedPickupPoint?.latitude,
                       pickupLng: _selectedPickupPoint?.longitude,
                       dropOffLocation: tripProvider.searchCtrl.text,
+                      dropOffLat: mapProvider.destinationLatLng?.latitude,
+                      dropOffLng: mapProvider.destinationLatLng?.longitude,
                       numberOfPassengers: bookingProvider.passengerCount,
+                      distance: mapProvider.routeDistanceKm,
+                      duration: mapProvider.routeDurationText,
                       totalFare: trip.price * bookingProvider.passengerCount,
                       paymentMethod: bookingProvider.paymentMethod,
                       note: bookingProvider.note,
-                      status: 'confirmed',
+                      status: 'pending',
                       createdAt: DateTime.now(),
                     );
                     try {
@@ -224,6 +229,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                       }
                       // chỉ mở khi thành công
                     } catch (e) {
+                      print(e);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Đặt chuyến thất bại: $e')),
                       );

@@ -36,8 +36,8 @@ class BookingService {
     try {
       final response = await authClient(idToken)
           .rpc('get_bookings_for_driver', params: {'p_driver_id': driverId});
-      return response
-          .map((json) => BookingModel.fromJson(json))
+      return (response as List)
+          .map((json) => BookingModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
       debugPrint('fetchBookingsForDriver error: $e');
