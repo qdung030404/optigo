@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:optigo/services/trip_service.dart';
+import 'package:optigo/utils/currency_formatter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -168,7 +169,7 @@ class BookingProvider extends ChangeNotifier {
     try{
       final idToken = await currentUser?.getIdToken();
       if (idToken == null) throw Exception("Người dùng chưa đăng nhập");
-      final  allBookings = await _bookingService.fetchBookingsForDriver(
+      final List<BookingModel> allBookings = await _bookingService.fetchBookingsForDriver(
         driverId,
         idToken,
       );
@@ -184,9 +185,7 @@ class BookingProvider extends ChangeNotifier {
   }
   Future<void> contactDriver(String phoneNumber) async {
     String cleanNumber = phoneNumber.replaceAll(RegExp(r'\s+'), '');
-    if (cleanNumber.startsWith('+84')) {
-      cleanNumber = '0${cleanNumber.substring(3)}';
-    }
+    Formatter.phoneFormatter(cleanNumber);
     final Uri launchUri = Uri(
       scheme: 'tel',
       path: cleanNumber,
