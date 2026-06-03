@@ -32,6 +32,10 @@ class MapProvider extends ChangeNotifier {
   LatLng? destinationLatLng;
   String? _currentAddress;
   String? get currentAddress => _currentAddress;
+  double? routeDistanceKm;
+  double? get routeDistance => routeDistanceKm;
+  String? routeDurationText;
+  String? get routeDuration => routeDurationText;
   List<LatLng> _userRoutePoints = [];
 
   List<LatLng> get userRoutePoints => _userRoutePoints;
@@ -199,11 +203,11 @@ class MapProvider extends ChangeNotifier {
 
           // Kiểm tra list routes có dữ liệu hay không trước khi truy cập
           if (data['routes'] != null && (data['routes'] as List).isNotEmpty) {
-            var route = data['routes'][0]['overview_polyline']['points'];
-            print("--- BAT DAU CHUOI POLYLINE ---");
-            final pattern = RegExp('.{1,800}'); // Cắt mỗi đoạn 800 ký tự
-            pattern.allMatches(route).forEach((match) => print(match.group(0)));
-            print("--- KET THUC CHUOI POLYLINE ---");
+            final routeData = data['routes'][0];
+            final leg = routeData['legs'][0];
+            var route = routeData['overview_polyline']['points'];
+            routeDistanceKm = (leg['distance']['value'] as num) / 1000.0;
+            routeDurationText = leg['duration']['text'];
             List<PointLatLng> result = PolylinePoints.decodePolyline(route);
             _userRoutePoints = result.map((point) => LatLng(point.latitude, point.longitude)).toList();
             List<List<double>> coordinates = result.map((point) => [point.longitude, point.latitude]).toList();
