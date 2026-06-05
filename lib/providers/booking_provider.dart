@@ -8,12 +8,18 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../models/booking_model.dart';
 import '../services/booking_service.dart';
+import '../services/realtime_notification_service.dart';
 
 class BookingProvider extends ChangeNotifier {
+  final _realtimeService = RealtimeNotificationService();
   bool _isSuccess = false;
   bool _isLoading = false;
   bool get isLoading => _isLoading;
   bool get isSuccess => _isSuccess;
+  
+  // Callback để thông báo cho UI (như HomeScreen) khi có thay đổi trạng thái
+  void Function(BookingModel)? onBookingStatusChanged;
+
   final _tripService = TripService();
   final _bookingService = BookingService();
   bool _isNow = false;
@@ -153,6 +159,12 @@ class BookingProvider extends ChangeNotifier {
         client: TripService.authClient(idToken),
       );
       _bookings = allBookings;
+      
+      // Khởi động real-time sau khi tải dữ liệu xong
+      _realtimeService.subscribeToBookingsForPassenger(
+        currentUser!.uid,
+        (data) => _handleBookingUpdate(data),
+      );
     } catch (e) {
       _isLoading = false;
       _bookingErrorMessage = "Không thể tải danh sách chuyến đi";
@@ -160,6 +172,26 @@ class BookingProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void _handleBookingUpdate(Map<String, dynamic> data) {
+    final updatedBooking = BookingModel.fromJson(data);
+    final index = _bookings.indexWhere((b) => b.id == updatedBooking.id);
+    
+    if (index != -1) {
+      // Cập nhật đơn hàng cũ bằng đơn hàng mới
+      _bookings[index] = updatedBooking;
+      notifyListeners(); // Cập nhật UI (như BookingManager) ngay lập tức!
+      
+      // Kích hoạt callback nếu có (như hiện SnackBar ở HomeScreen)
+      onBookingStatusChanged?.call(updatedBooking);
+    }
+  }
+
+  @override
+  void dispose() {
+    _realtimeService.unsubscribe();
+    super.dispose();
   }
   Future<List<BookingModel>> loadBookingsForDriver(String driverId) async {
     _isLoading = true;
@@ -185,10 +217,10 @@ class BookingProvider extends ChangeNotifier {
   }
   Future<void> contactDriver(String phoneNumber) async {
     String cleanNumber = phoneNumber.replaceAll(RegExp(r'\s+'), '');
-    Formatter.phoneFormatter(cleanNumber);
+    String formattedNumber = Formatter.phoneFormatter(cleanNumber);
     final Uri launchUri = Uri(
       scheme: 'tel',
-      path: cleanNumber,
+      path: formattedNumber,
     );
 
     //Kiểm tra xem thiết bị có thể mở ứng dụng gọi điện không
@@ -218,6 +250,22 @@ class BookingProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error canceling booking: $e');
       _bookingErrorMessage = "Không thể hủy chuyến đi. Vui lòng thử lại.";
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+  Future<void> confirmBooking(String driverId, String bookingId) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final idToken = await currentUser?.getIdToken();
+      if (idToken == null) throw Exception("Người dùng chưa đăng nhập");
+      await _bookingService.confirmBooking(driverId ,bookingId, idToken);
+      print('Booking confirmed successfully');
+    } catch (e) {
+      debugPrint('Error confirming booking: $e');
+      _bookingErrorMessage = "Không thể xác nhận chuyến đi. Vui lòng thử lại.";
     } finally {
       _isLoading = false;
       notifyListeners();
