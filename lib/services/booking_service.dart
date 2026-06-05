@@ -44,4 +44,13 @@ class BookingService {
       rethrow;
     }
   }
+  Future<void> confirmBooking(String driverId, String bookingId, String idToken) async {
+    try{
+      await authClient(idToken).rpc('confirm_booking', params: {'p_driver_id': driverId, 'p_booking_id': bookingId});
+    }
+    catch(e){
+      debugPrint('Failed to confirm booking: $e');
+      rethrow;
+    }
+  }
 }

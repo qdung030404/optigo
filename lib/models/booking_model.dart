@@ -1,3 +1,24 @@
+import 'package:flutter/material.dart';
+
+enum BookingStatus {
+  pending('pending', label: 'Đang xử lý', color: Colors.orange, icon: Icons.pending),
+  confirmed('confirmed', label: 'Đã xác nhận', color: Colors.green, icon: Icons.check_circle),
+  cancelled('cancelled', label: 'Đã hủy', color: Colors.red, icon: Icons.cancel);
+
+  final String value;
+  final String label;
+  final Color color;
+  final IconData icon;
+  const BookingStatus(this.value, {required this.label, required this.color, required this.icon});
+
+  static BookingStatus fromString(String status) {
+    return BookingStatus.values.firstWhere(
+      (e) => e.value == status,
+      orElse: () => BookingStatus.pending,
+    );
+  }
+}
+
 class BookingModel {
   final int? id;
   final String tripId;
@@ -12,7 +33,7 @@ class BookingModel {
   final int? totalFare;
   final String? paymentMethod;
   final String? note;
-  final String status;
+  final BookingStatus status;
   final String? passengerName;
   final String? passengerPhone;
   final double? distance;
@@ -34,7 +55,7 @@ class BookingModel {
     this.totalFare,
     this.paymentMethod = 'cash',
     this.note,
-    this.status = 'pending',
+    this.status = BookingStatus.pending,
     this.passengerName,
     this.passengerPhone,
     required this.distance,
@@ -58,7 +79,7 @@ class BookingModel {
       totalFare: (map['total_fare'] as num?)?.toInt() ?? 0,
       paymentMethod: map['payment_method'] ?? 'cash',
       note: map['note'],
-      status: map['status'] ?? 'pending',
+      status: BookingStatus.fromString(map['status'] ?? 'pending'),
       passengerName: map['passenger_name'],
       passengerPhone: map['passenger_phone'],
       distance: (map['distance'] as num?)?.toDouble() ?? 0.0,
@@ -83,7 +104,7 @@ class BookingModel {
       if (totalFare != null) 'total_fare': totalFare,
       if (paymentMethod != null) 'payment_method': paymentMethod,
       if (note != null) 'note': note,
-      'status': status,
+      'status': status.value,
       if (passengerName != null) 'passenger_name': passengerName,
       if (passengerPhone != null) 'passenger_phone': passengerPhone,
       if (distance != null) 'distance': distance,
@@ -107,7 +128,7 @@ class BookingModel {
     int? totalFare,
     String? paymentMethod,
     String? note,
-    String? status,
+    BookingStatus? status,
     String? passengerName,
     String? passengerPhone,
     double? distance,
