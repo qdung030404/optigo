@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:optigo/models/booking_model.dart';
 
 class CardHeader extends StatelessWidget {
   final bool isReadOnly;
   final String code;
-  final String status;
+  final BookingStatus status;
   const CardHeader({super.key, required this.code, required this.status, this.isReadOnly = false});
 
   @override
@@ -43,28 +43,18 @@ class CardHeader extends StatelessWidget {
               vertical: 6.h,
             ),
             decoration: BoxDecoration(
-              color: status == 'pending'
-                  ? Colors.orange.withOpacity(0.2)
-                  : Colors.green.withOpacity(0.2),
+              color: status.color.withOpacity(0.2),
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Row(
               children: [
-                status == 'pending'
-                    ? FaIcon(
-                  FontAwesomeIcons.clock,
-                  size: 14,
-                  color: Colors.orange,
-                )
-                    : Icon(Icons.verified, size: 14, color: Colors.green),
+                Icon(status.icon, size: 14, color: status.color),
                 SizedBox(width: 4.w),
                 Text(
-                  status == 'pending' ? 'Đang xử lý' : 'Đã xác nhận',
+                  status.label,
                   style: TextStyle(
                     fontSize: 10.sp,
-                    color: status == 'pending'
-                        ? Colors.orange[700]
-                        : Colors.green[700],
+                    color: status.color,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

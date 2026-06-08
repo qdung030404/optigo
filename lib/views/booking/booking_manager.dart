@@ -11,6 +11,7 @@ import 'package:optigo/views/booking/widget/card_body.dart';
 import 'package:optigo/views/booking/widget/card_footer.dart';
 import 'package:optigo/views/booking/widget/card_header.dart';
 import 'package:optigo/views/booking/widget/driver_infomation.dart';
+import 'package:optigo/models/booking_model.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/routes.dart';
@@ -168,7 +169,7 @@ class _BookingManagerState extends State<BookingManager> {
     required String date,
     required String time,
     required String pickup,
-    required String status,
+    required BookingStatus status,
     required String driverName,
     required String driverLicensePlate,
     required VoidCallback onTap,

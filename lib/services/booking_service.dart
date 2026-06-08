@@ -44,7 +44,7 @@ class BookingService {
       rethrow;
     }
   }
-  Future<void> confirmBooking(String driverId, String bookingId, String idToken) async {
+  Future<void> confirmBooking(String driverId, int bookingId, String idToken) async {
     try{
       await authClient(idToken).rpc('confirm_booking', params: {'p_driver_id': driverId, 'p_booking_id': bookingId});
     }

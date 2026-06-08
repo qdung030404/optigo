@@ -15,16 +15,15 @@ class CombineTripsManagement extends StatefulWidget {
 
 class _CombineTripsManagementState extends State<CombineTripsManagement> {
   late Future<List<BookingModel>> _driverBookingsFuture;
-
+  final driverId = FirebaseAuth.instance.currentUser?.uid;
   @override
   void initState() {
     super.initState();
     // Lấy ID của tài xế hiện tại từ Firebase
-    final driverId = FirebaseAuth.instance.currentUser?.uid;
-
+    driverId;
     if (driverId != null) {
       _driverBookingsFuture =
-          context.read<BookingProvider>().loadBookingsForDriver(driverId);
+          context.read<BookingProvider>().loadBookingsForDriver(driverId!);
     } else {
       _driverBookingsFuture = Future.value([]);
     }
@@ -53,7 +52,7 @@ class _CombineTripsManagementState extends State<CombineTripsManagement> {
             itemCount: bookings.length,
             itemBuilder: (context, index) {
               final booking = bookings[index];
-              return CombineTripsCard(booking: booking);
+              return CombineTripsCard(booking: booking, driverId: driverId!,);
             },
           );
         },

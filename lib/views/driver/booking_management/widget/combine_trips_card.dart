@@ -4,14 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:optigo/models/booking_model.dart';
 import 'package:optigo/providers/booking_provider.dart';
-import 'package:optigo/providers/map_provider.dart';
 import 'package:optigo/utils/currency_formatter.dart';
 import 'package:optigo/widgets/build_widget.dart';
 import 'package:provider/provider.dart';
 
 class CombineTripsCard extends StatelessWidget {
+  final String driverId;
   final BookingModel booking;
-  const CombineTripsCard({super.key, required this.booking});
+  const CombineTripsCard({super.key, required this.booking, required this.driverId});
 
   @override
   Widget build(BuildContext context) {
@@ -116,52 +116,79 @@ class CombineTripsCard extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical:12.h),
-            child: Divider(height: 1, color: Colors.grey[400]),
-          ),
-          Padding(
             padding: EdgeInsets.all(8.sp),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.3,
-                  child: ElevatedButton(
-                    onPressed: () {} ,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xff176bac),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        side: BorderSide(width: 2.w, color: const Color(0xff176bac)),
+            child: Consumer<BookingProvider>(
+              builder: (context, provider, _) {
+                return Row(
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.3,
+                      child: ElevatedButton(
+                        onPressed: provider.isLoading ? null : () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xff176bac),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            side: BorderSide(width: 2.w, color: const Color(0xff176bac)),
+                          ),
+                        ),
+                        child: Text(
+                          'Từ chối',
+                          style: GoogleFonts.lexend(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                    child: Text(
-                      'Từ chối',
-                      style: GoogleFonts.lexend(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: provider.isLoading
+                            ? null
+                            : () async {
+                                await provider.confirmBooking(driverId, booking.id!);
+                                if (context.mounted) {
+                                  if (provider.isSuccess) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Đã xác nhận chuyến thành công!'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  } else if (provider.bookingErrorMessage != null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(provider.bookingErrorMessage!),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xfffedd59),
+                          foregroundColor: const Color(0xff176bac),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                        child: provider.isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : Text(
+                                'Chấp nhận',
+                                style: GoogleFonts.lexend(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                              ),
                       ),
                     ),
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xfffedd59),
-                      foregroundColor: const Color(0xff176bac),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    child: Text(
-                      'Chấp nhận',
-                      style: GoogleFonts.lexend(fontSize: 16.sp,fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         ]

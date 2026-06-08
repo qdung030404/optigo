@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:optigo/services/notification_service.dart';
+import 'package:optigo/services/realtime_notification_service.dart';
 import 'package:optigo/views/driver/booking_management/booking_management.dart';
 import 'package:optigo/views/driver/manage_trip/manage_trip.dart';
 import 'package:optigo/views/driver/post_a_trip/create_trip.dart';
@@ -18,6 +21,25 @@ class _DriverBottomNavBarState extends State<DriverBottomNavBar> {
     CreateTrip(),
     CombineTripsManagement(),
   ];
+
+
+  @override
+  void initState() {
+    super.initState();
+    final driverId = FirebaseAuth.instance.currentUser?.uid;
+    if (driverId != null) {
+      RealtimeNotificationService().subscribeToBookings(driverId, (bookingData) {
+        _showNotification(bookingData);
+      });
+    }
+  }
+
+  void _showNotification(Map<String, dynamic> booking) {
+    NotificationService().showNotification(
+      title: 'bạn có yêu cầu ghép chuyến mới!',
+      body: 'Có hành khách muốn đặt chuyến của bạn.',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
