@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:optigo/config/routes.dart';
 import 'package:optigo/providers/auth_provider.dart';
+import 'package:optigo/services/notification_service.dart';
 import 'package:optigo/providers/booking_provider.dart';
 import 'package:optigo/providers/map_provider.dart';
 import 'package:optigo/providers/search_provider.dart';
@@ -34,6 +35,7 @@ void main() async {
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
+  await NotificationService().initialize();
   runApp(const MyApp());
 }
 

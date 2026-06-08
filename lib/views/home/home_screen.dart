@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:optigo/models/booking_model.dart';
 import 'package:optigo/models/place_model.dart';
 import 'package:optigo/models/user_model.dart';
 import 'package:optigo/providers/auth_provider.dart';
@@ -9,6 +10,7 @@ import 'package:optigo/providers/booking_provider.dart';
 import 'package:optigo/providers/map_provider.dart';
 import 'package:optigo/providers/search_provider.dart';
 import 'package:optigo/providers/trip_provider.dart';
+import 'package:optigo/services/notification_service.dart';
 import 'package:optigo/views/home/widget/build_drawer.dart';
 import 'package:optigo/views/home/widget/build_map.dart';
 import 'package:optigo/views/home/widget/location_input_box.dart';
@@ -30,6 +32,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BookingProvider>().onBookingStatusChanged = (booking) {
+        if (mounted) {
+          _showNotification(booking);
+        }
+      };
+    });
   }
 
   @override
@@ -37,6 +46,13 @@ class _HomeScreenState extends State<HomeScreen> {
     originController.dispose();
     destinationController.dispose();
     super.dispose();
+  }
+
+  void _showNotification(BookingModel booking) {
+    NotificationService().showNotification(
+      title: 'Chấp nhận yêu cầu ',
+      body: 'Tài xế đã chấp nhận yêu cầu ghép chuyến của bạn.',
+    );
   }
   Future<void> _handleSearch({required bool isOrigin}) async {
     final result = await Navigator.push(
