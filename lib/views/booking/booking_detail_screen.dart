@@ -56,10 +56,9 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                 : () async {
                     await bookingProvider.cancelBooking(booking);
                     if (!context.mounted) return;
-                    Navigator.pushNamedAndRemoveUntil(
+                    Navigator.popUntil(
                       context,
-                      Routes.bookingManager,
-                      (route) => false,
+                      ModalRoute.withName(Routes.bookingManager),
                     );
                     bookingProvider.loadBookings();
                   },
