@@ -184,7 +184,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                       totalFare: trip.price * bookingProvider.passengerCount,
                       paymentMethod: bookingProvider.paymentMethod,
                       note: bookingProvider.note,
-                      status: 'pending',
+                      status: BookingStatus.pending,
                       createdAt: DateTime.now(),
                     );
                     try {
@@ -227,7 +227,6 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                       } else if (bookingProvider.isSuccess) {
                         _showSuccessDialog();
                       }
-                      // chỉ mở khi thành công
                     } catch (e) {
                       print(e);
                       ScaffoldMessenger.of(context).showSnackBar(
