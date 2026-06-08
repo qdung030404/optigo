@@ -255,17 +255,21 @@ class BookingProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-  Future<void> confirmBooking(String driverId, String bookingId) async {
+  Future<void> confirmBooking(String driverId, int bookingId) async {
     _isLoading = true;
     notifyListeners();
     try {
       final idToken = await currentUser?.getIdToken();
       if (idToken == null) throw Exception("Người dùng chưa đăng nhập");
-      await _bookingService.confirmBooking(driverId ,bookingId, idToken);
-      print('Booking confirmed successfully');
+      await _bookingService.confirmBooking(driverId, bookingId, idToken);
+      _isSuccess = true;
+      debugPrint('Booking confirmed successfully');
     } catch (e) {
+      _isSuccess = false;
       debugPrint('Error confirming booking: $e');
-      _bookingErrorMessage = "Không thể xác nhận chuyến đi. Vui lòng thử lại.";
+      _bookingErrorMessage = e is PostgrestException
+          ? e.message
+          : "Không thể xác nhận chuyến đi. Vui lòng thử lại.";
     } finally {
       _isLoading = false;
       notifyListeners();
