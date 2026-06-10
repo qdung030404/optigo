@@ -11,11 +11,19 @@ import 'package:provider/provider.dart';
 class CombineTripsCard extends StatelessWidget {
   final String driverId;
   final BookingModel booking;
-  const CombineTripsCard({super.key, required this.booking, required this.driverId});
+
+  const CombineTripsCard({
+    super.key,
+    required this.booking,
+    required this.driverId,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ');
+    final currencyFormat = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: 'VNĐ',
+    );
     return Container(
       padding: EdgeInsets.all(16.sp),
       margin: EdgeInsets.all(10.sp),
@@ -40,18 +48,42 @@ class CombineTripsCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(booking.passengerName ?? "", style: GoogleFonts.lexend(fontSize: 16.sp, fontWeight: FontWeight.bold)),
-                  Text(Formatter.phoneFormatter(booking.passengerPhone ?? ""), style: GoogleFonts.lexend(fontSize: 14.sp, fontWeight: FontWeight.normal)),
-                ]
+                  Text(
+                    booking.passengerName ?? "",
+                    style: GoogleFonts.lexend(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    Formatter.phoneFormatter(booking.passengerPhone ?? ""),
+                    style: GoogleFonts.lexend(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ],
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(currencyFormat.format(booking.totalFare), style: GoogleFonts.lexend(fontSize: 16.sp, fontWeight: FontWeight.bold)),
-                  Text('${booking.paymentMethod}', style: GoogleFonts.lexend(fontSize: 14.sp, fontWeight: FontWeight.normal)),
-                ]
-              )
-            ]
+                  Text(
+                    currencyFormat.format(booking.totalFare),
+                    style: GoogleFonts.lexend(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${booking.paymentMethod}',
+                    style: GoogleFonts.lexend(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           SizedBox(height: 10.h),
           Row(
@@ -78,7 +110,7 @@ class CombineTripsCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     BuildWidget.buildLocation(
-                      fullAddress: booking.pickupLocation! ,
+                      fullAddress: booking.pickupLocation!,
                     ),
                     SizedBox(height: 25.h),
                     BuildWidget.buildLocation(
@@ -95,45 +127,107 @@ class CombineTripsCard extends StatelessWidget {
           ),
           IntrinsicHeight(
             child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text('Quãng đường', style: GoogleFonts.lexend(fontSize: 14.sp, fontWeight: FontWeight.bold)),
-                      Text('${booking.distance?.toStringAsFixed(2)} km', style: GoogleFonts.lexend(fontSize: 14.sp, fontWeight: FontWeight.normal)),
-                    ],
-                  ),
-                  VerticalDivider(thickness: 2, color: Colors.grey[400],),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text('Thời gian dự kiến', style: GoogleFonts.lexend(fontSize: 14.sp, fontWeight: FontWeight.bold)),
-                      Text('${booking.duration}', style: GoogleFonts.lexend(fontSize: 14.sp, fontWeight: FontWeight.normal)),
-                    ],
-                  )
-                ]
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Quãng đường',
+                      style: GoogleFonts.lexend(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '${booking.distance?.toStringAsFixed(2)} km',
+                      style: GoogleFonts.lexend(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+                VerticalDivider(thickness: 2, color: Colors.grey[400]),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Thời gian dự kiến',
+                      style: GoogleFonts.lexend(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '${booking.duration}',
+                      style: GoogleFonts.lexend(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
           Padding(
             padding: EdgeInsets.all(8.sp),
             child: Consumer<BookingProvider>(
               builder: (context, provider, _) {
-                return Row(
+                return booking.status == BookingStatus.pending ? Row(
                   children: [
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.3,
                       child: ElevatedButton(
-                        onPressed: provider.isLoading ? null : () {},
+                        onPressed: provider.isLoading
+                            ? null
+                            : () async {
+                          await provider.rejectBooking(
+                            driverId,
+                            booking.id!,
+                          );
+                          if (context.mounted) {
+                            if (provider.isSuccess) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Từ chối thành công!'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            } else if (provider.bookingErrorMessage !=
+                                null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    provider.bookingErrorMessage!,
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: const Color(0xff176bac),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
-                            side: BorderSide(width: 2.w, color: const Color(0xff176bac)),
+                            side: BorderSide(
+                              width: 2.w,
+                              color: const Color(0xff176bac),
+                            ),
                           ),
                         ),
-                        child: Text(
+                        child: provider.isLoading
+                            ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                            : Text(
                           'Từ chối',
                           style: GoogleFonts.lexend(
                             fontSize: 16.sp,
@@ -148,25 +242,33 @@ class CombineTripsCard extends StatelessWidget {
                         onPressed: provider.isLoading
                             ? null
                             : () async {
-                                await provider.confirmBooking(driverId, booking.id!);
-                                if (context.mounted) {
-                                  if (provider.isSuccess) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Đã xác nhận chuyến thành công!'),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
-                                  } else if (provider.bookingErrorMessage != null) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(provider.bookingErrorMessage!),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                }
-                              },
+                          await provider.confirmBooking(
+                            driverId,
+                            booking.id!,
+                          );
+                          if (context.mounted) {
+                            if (provider.isSuccess) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Đã xác nhận chuyến thành công!',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            } else if (provider.bookingErrorMessage !=
+                                null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    provider.bookingErrorMessage!,
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xfffedd59),
                           foregroundColor: const Color(0xff176bac),
@@ -176,22 +278,27 @@ class CombineTripsCard extends StatelessWidget {
                         ),
                         child: provider.isLoading
                             ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
                             : Text(
-                                'Chấp nhận',
-                                style: GoogleFonts.lexend(fontSize: 16.sp, fontWeight: FontWeight.bold),
-                              ),
+                          'Chấp nhận',
+                          style: GoogleFonts.lexend(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ],
-                );
+                ): SizedBox.shrink();
               },
             ),
           ),
-        ]
+        ],
       ),
     );
   }

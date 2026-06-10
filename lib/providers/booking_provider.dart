@@ -275,4 +275,24 @@ class BookingProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  Future<void> rejectBooking(String driverId, int bookingId) async{
+    _isLoading = true;
+    notifyListeners();
+    try{
+      final idToken = await currentUser?.getIdToken();
+      if (idToken == null) throw Exception("Người dùng chưa đăng nhập");
+      await _bookingService.rejectBooking(driverId, bookingId, idToken);
+      _isSuccess = true;
+      debugPrint('Booking rejected successfully');
+    } catch (e){
+      _isSuccess = false;
+      debugPrint('Error rejecting booking: $e');
+      _bookingErrorMessage = e is PostgrestException
+          ? e.message
+          : "Không thể hủy chuyến đi. Vui lòng thử lại.";
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }
