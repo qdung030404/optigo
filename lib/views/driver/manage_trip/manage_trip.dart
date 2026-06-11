@@ -55,7 +55,7 @@ class _ManageTripState extends State<ManageTrip> {
             itemCount: trips.length,
             itemBuilder: (context, index) {
               final trip = trips[index];
-              return TripCard(trip: trip,);
+              return TripCard(trip: trip, status: trip.status,);
             },
           );
         },
