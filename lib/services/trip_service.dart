@@ -63,6 +63,22 @@ class TripService {
       rethrow;
     }
   }
+
+  Future<void> updateTripDetails({
+    required String tripId,
+    required Map<String, dynamic> updates,
+    required String idToken,
+  }) async {
+    try {
+      await authClient(idToken)
+          .from('trips')
+          .update(updates)
+          .eq('id', tripId);
+    } catch (e) {
+      debugPrint('Failed to update trip details: $e');
+      rethrow;
+    }
+  }
   Future<void> updateTrip({required String tripId, required int seatsReduce, required String idToken}) async {
     try{
       await authClient(idToken).rpc('book_trip_and_update_seats', params: {'p_trip_id': tripId, 'p_seats_to_reduce': seatsReduce});
@@ -95,5 +111,15 @@ class TripService {
       return [];
     }
   }
-
+  Future<void> cancelTrip(String tripId, String idToken) async {
+    try {
+      await authClient(idToken)
+          .from('trips')
+          .update({'status': 'cancelled'})
+          .eq('id', tripId);
+    } catch (e) {
+      debugPrint('Failed to cancel trip: $e');
+      rethrow;
+    }
+  }
 }
