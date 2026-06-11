@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../config/routes.dart';
 
 class NotifyDialog extends StatelessWidget {
   final String title;
@@ -44,9 +43,7 @@ class NotifyDialog extends StatelessWidget {
                 ),
                 elevation: 0,
               ),
-              onPressed: () {
-                onTap;
-              },
+              onPressed: onTap,
               child: Text(
                   buttonText
               ),

@@ -23,6 +23,10 @@ enum CarType {
       (CarType seat) => CarEntries(value: seat, label: seat.label),
     ),
   );
+
+  static CarType fromSeats(int seats) {
+    return values.firstWhere((e) => e.numberOfSeats == seats, orElse: () => CarType.sedan);
+  }
 }
 
 class NumberOfSeats extends StatefulWidget {

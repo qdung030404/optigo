@@ -5,11 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:optigo/models/trip_model.dart';
 import 'package:optigo/providers/trip_provider.dart';
-import 'package:optigo/views/driver/post_a_trip/widget/departure_time_card.dart';
-import 'package:optigo/views/driver/post_a_trip/widget/number_of_seats.dart';
-import 'package:optigo/views/driver/post_a_trip/widget/price_card.dart';
-import 'package:optigo/views/driver/post_a_trip/widget/route_details_card.dart';
 import 'package:optigo/views/driver/post_a_trip/widget/notify_dialog.dart';
+import 'package:optigo/views/driver/post_a_trip/widget/number_of_seats.dart';
+import 'package:optigo/views/driver/post_a_trip/widget/trip_form.dart';
 import 'package:provider/provider.dart';
 
 class CreateTrip extends StatefulWidget {
@@ -38,7 +36,7 @@ class _CreateTripState extends State<CreateTrip> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: NotifyDialog(title: title, icon: icon, onTap: () => onTap  , buttonText: buttonText,),
+      child: NotifyDialog(title: title, icon: icon, onTap: onTap, buttonText: buttonText,),
     ) );
   }
   @override
@@ -68,7 +66,9 @@ class _CreateTripState extends State<CreateTrip> {
         child: Column(
           children: [
 
-            RouteDetailsCard(
+            TripForm(
+              originName: originNameDescription,
+              destinationName: destinationNameDescription,
               onPickupSelected: (desc, lat, long) {
                 setState(() {
                   originNameDescription = desc;
@@ -81,31 +81,22 @@ class _CreateTripState extends State<CreateTrip> {
                   destinationLatLng = LatLng(lat, long);
                 });
               },
-            ),
-            SizedBox(height: 16.h),
-            // Departure Time Card
-            DepartureTimeCard(
               onDateTimeChanged: (DateTime dateTime) {
                 setState(() {
                   departureTime = dateTime;
                 });
               },
-            ),
-            SizedBox(height: 16.h),
-            // Number of Seats
-            NumberOfSeats(
-              onSelected: (CarType? value) {
+              onSeatsSelected: (CarType? value) {
                 setState(() {
                   seats = value?.numberOfSeats;
                 });
               },
+              onPriceChanged: (int? value) {
+                setState(() {
+                  price = value;
+                });
+              },
             ),
-            SizedBox(height: 16.h),
-            PriceCard(onPriceChanged: (int? value) {
-              setState(() {
-                price = value;
-              });
-            }),
             SizedBox(height: 32.h),
             // Book Button
             SizedBox(

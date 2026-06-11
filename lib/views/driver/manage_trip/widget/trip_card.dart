@@ -3,7 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:optigo/models/trip_model.dart';
+import 'package:optigo/providers/trip_provider.dart';
+import 'package:optigo/views/driver/manage_trip/edit_trip.dart';
 import 'package:optigo/widgets/build_widget.dart';
+import 'package:provider/provider.dart';
 
 class TripCard extends StatefulWidget {
   final TripModel trip;
@@ -22,7 +25,7 @@ class _TripCardState extends State<TripCard> {
       locale: 'vi_VN',
       symbol: 'VNĐ',
     );
-
+    final tripProvider = context.read<TripProvider>();
     var bookedSeat = widget.trip.totalSeats - widget.trip.availableSeats;
     bool isFull = widget.trip.totalSeats == bookedSeat;
     return Container(
@@ -186,13 +189,20 @@ class _TripCardState extends State<TripCard> {
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
             child: Divider(height: 1, color: Colors.grey[400]),
           ),
-          Row(
+          (widget.status == TripStatus.cancelled) ? SizedBox.shrink() : Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               if (!isFull) ...[
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditTrip(trip: widget.trip),
+                        ),
+                      );
+                    },
                     label: Text('Sửa chuyến đi', style: GoogleFonts.lexend(fontSize: 16.sp)),
                     icon: const Icon(Icons.edit_outlined),
                     style: ElevatedButton.styleFrom(
@@ -210,11 +220,9 @@ class _TripCardState extends State<TripCard> {
               ],
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () => tripProvider.cancelTrip(widget.trip.id.toString()),
                   icon: const Icon(Icons.delete_outline),
-                  label: Text(widget.trip.status == 'open'
-                      ? 'Xóa chuyến đi'
-                      : 'Hủy chuyến đi', style: GoogleFonts.lexend(fontSize: 16.sp)),
+                  label: Text('Hủy chuyến đi', style: GoogleFonts.lexend(fontSize: 16.sp)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red.withOpacity(0.2),
                     foregroundColor: Colors.red,

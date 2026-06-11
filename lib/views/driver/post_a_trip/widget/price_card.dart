@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:optigo/utils/currency_formatter.dart';
 
 class PriceCard extends StatefulWidget {
@@ -24,9 +25,12 @@ class _PriceCardState extends State<PriceCard> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(
-      text: widget.initialPrice != null ? widget.initialPrice.toString() : '',
-    );
+    String initialText = '';
+    if (widget.initialPrice != null) {
+      final formatter = NumberFormat('#,###', 'vi_VN');
+      initialText = formatter.format(widget.initialPrice);
+    }
+    _controller = TextEditingController(text: initialText);
   }
 
   @override
