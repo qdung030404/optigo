@@ -12,7 +12,8 @@ class CombineTripsManagement extends StatefulWidget {
   State<CombineTripsManagement> createState() => _CombineTripsManagementState();
 }
 
-class _CombineTripsManagementState extends State<CombineTripsManagement> with SingleTickerProviderStateMixin{
+class _CombineTripsManagementState extends State<CombineTripsManagement>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late Future<List<BookingModel>> _driverBookingsFuture;
   final driverId = FirebaseAuth.instance.currentUser?.uid;
@@ -24,15 +25,19 @@ class _CombineTripsManagementState extends State<CombineTripsManagement> with Si
     _tabController.addListener(_handleTabSelection);
     loadData();
   }
-  void loadData(){
+
+  void loadData() {
     if (driverId != null) {
       setState(() {
-        _driverBookingsFuture = context.read<BookingProvider>().loadBookingsForDriver(driverId!);
+        _driverBookingsFuture = context
+            .read<BookingProvider>()
+            .loadBookingsForDriver(driverId!);
       });
     } else {
       _driverBookingsFuture = Future.value([]);
     }
   }
+
   void _handleTabSelection() {
     if (_tabController.indexIsChanging) {
       loadData();
@@ -45,6 +50,7 @@ class _CombineTripsManagementState extends State<CombineTripsManagement> with Si
     _tabController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,6 +98,7 @@ class _CombineTripsManagementState extends State<CombineTripsManagement> with Si
       ),
     );
   }
+
   Widget _buildList(List<BookingModel> bookings) {
     if (bookings.isEmpty) {
       return const Center(child: Text('Không có yêu cầu nào'));
@@ -99,10 +106,7 @@ class _CombineTripsManagementState extends State<CombineTripsManagement> with Si
     return ListView.builder(
       itemCount: bookings.length,
       itemBuilder: (context, index) {
-        return CombineTripsCard(
-          booking: bookings[index],
-          driverId: driverId!,
-        );
+        return CombineTripsCard(booking: bookings[index], driverId: driverId!);
       },
     );
   }

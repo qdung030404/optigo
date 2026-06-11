@@ -23,22 +23,32 @@ class _CreateTripState extends State<CreateTrip> {
   LatLng? originLatLng;
   LatLng? destinationLatLng;
 
-
-
   DateTime? departureTime;
   int? seats;
   int? price;
 
   String? get uid => FirebaseAuth.instance.currentUser?.uid;
-  void _showNotifyDialog(
-      {required String title,required String buttonText,required IconData icon,required VoidCallback onTap}){
-    showDialog(context: context, builder: (_) => Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+
+  void _showNotifyDialog({
+    required String title,
+    required String buttonText,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: NotifyDialog(
+          title: title,
+          icon: icon,
+          onTap: onTap,
+          buttonText: buttonText,
+        ),
       ),
-      child: NotifyDialog(title: title, icon: icon, onTap: onTap, buttonText: buttonText,),
-    ) );
+    );
   }
+
   @override
   Widget build(BuildContext context) {
     final tripProvider = Provider.of<TripProvider>(context);
@@ -65,7 +75,6 @@ class _CreateTripState extends State<CreateTrip> {
         padding: EdgeInsets.all(16.w),
         child: Column(
           children: [
-
             TripForm(
               originName: originNameDescription,
               destinationName: destinationNameDescription,
@@ -112,21 +121,26 @@ class _CreateTripState extends State<CreateTrip> {
                             seats == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text('Vui lòng điền đầy đủ thông tin')),
+                              content: Text('Vui lòng điền đầy đủ thông tin'),
+                            ),
                           );
                           return;
                         }
 
                         // Lấy polyline
                         final polyline = await tripProvider.fetchRoutePolyline(
-                            originLatLng!, destinationLatLng!);
+                          originLatLng!,
+                          destinationLatLng!,
+                        );
 
                         if (polyline == null) {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(tripProvider.errorMessage ??
-                                    'Lỗi lấy thông tin đường đi'),
+                                content: Text(
+                                  tripProvider.errorMessage ??
+                                      'Lỗi lấy thông tin đường đi',
+                                ),
                               ),
                             );
                           }
@@ -150,16 +164,25 @@ class _CreateTripState extends State<CreateTrip> {
                           status: TripStatus.open,
                         );
 
-                        final success =
-                            await tripProvider.createTrip(tripData);
+                        final success = await tripProvider.createTrip(tripData);
 
                         if (success) {
                           if (context.mounted) {
-                            _showNotifyDialog(title: 'Tạo chuyến đi thành công', buttonText: 'Quay lại trang chủ', icon: Icons.check_circle, onTap: () => Navigator.pop(context));
+                            _showNotifyDialog(
+                              title: 'Tạo chuyến đi thành công',
+                              buttonText: 'Quay lại trang chủ',
+                              icon: Icons.check_circle,
+                              onTap: () => Navigator.pop(context),
+                            );
                           }
                         } else {
                           if (context.mounted) {
-                            _showNotifyDialog(title: 'Tạo chuyến đi thất bại', buttonText: 'Thử lại', icon: Icons.error, onTap: () => Navigator.pop(context));
+                            _showNotifyDialog(
+                              title: 'Tạo chuyến đi thất bại',
+                              buttonText: 'Thử lại',
+                              icon: Icons.error,
+                              onTap: () => Navigator.pop(context),
+                            );
                           }
                         }
                       },

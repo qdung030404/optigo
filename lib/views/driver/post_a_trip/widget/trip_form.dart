@@ -12,7 +12,7 @@ class TripForm extends StatelessWidget {
   final DateTime? initialDepartureTime;
   final CarType? initialCarType;
   final int? initialPrice;
-  
+
   final Function(String, double, double)? onPickupSelected;
   final Function(String, double, double)? onDestinationSelected;
   final Function(DateTime) onDateTimeChanged;
@@ -59,10 +59,7 @@ class TripForm extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
         ],
-        PriceCard(
-          initialPrice: initialPrice,
-          onPriceChanged: onPriceChanged,
-        ),
+        PriceCard(initialPrice: initialPrice, onPriceChanged: onPriceChanged),
       ],
     );
   }

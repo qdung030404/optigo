@@ -57,7 +57,11 @@ class _TripCardState extends State<TripCard> {
                 ),
                 child: Row(
                   children: [
-                    Icon(widget.status.icon, size: 14, color: widget.status.color),
+                    Icon(
+                      widget.status.icon,
+                      size: 14,
+                      color: widget.status.color,
+                    ),
                     SizedBox(width: 4.w),
                     Text(
                       widget.status.label,
@@ -189,52 +193,62 @@ class _TripCardState extends State<TripCard> {
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
             child: Divider(height: 1, color: Colors.grey[400]),
           ),
-          (widget.status == TripStatus.cancelled) ? SizedBox.shrink() : Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (!isFull) ...[
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditTrip(trip: widget.trip),
+          (widget.status == TripStatus.cancelled)
+              ? SizedBox.shrink()
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (!isFull) ...[
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EditTrip(trip: widget.trip),
+                              ),
+                            );
+                          },
+                          label: Text(
+                            'Sửa chuyến đi',
+                            style: GoogleFonts.lexend(fontSize: 16.sp),
+                          ),
+                          icon: const Icon(Icons.edit_outlined),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.r),
+                              side: const BorderSide(color: Colors.black),
+                            ),
+                            elevation: 0,
+                          ),
                         ),
-                      );
-                    },
-                    label: Text('Sửa chuyến đi', style: GoogleFonts.lexend(fontSize: 16.sp)),
-                    icon: const Icon(Icons.edit_outlined),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.r),
-                        side: const BorderSide(color: Colors.black),
                       ),
-                      elevation: 0,
+                      SizedBox(width: 10.w),
+                    ],
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () =>
+                            tripProvider.cancelTrip(widget.trip.id.toString()),
+                        icon: const Icon(Icons.delete_outline),
+                        label: Text(
+                          'Hủy chuyến đi',
+                          style: GoogleFonts.lexend(fontSize: 16.sp),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.withOpacity(0.2),
+                          foregroundColor: Colors.red,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                SizedBox(width: 10.w),
-              ],
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => tripProvider.cancelTrip(widget.trip.id.toString()),
-                  icon: const Icon(Icons.delete_outline),
-                  label: Text('Hủy chuyến đi', style: GoogleFonts.lexend(fontSize: 16.sp)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.withOpacity(0.2),
-                    foregroundColor: Colors.red,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                    elevation: 0,
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );

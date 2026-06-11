@@ -1,8 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:optigo/models/booking_model.dart';
 import 'package:optigo/models/trip_model.dart';
-import 'package:optigo/providers/booking_provider.dart';
 import 'package:optigo/providers/trip_provider.dart';
 import 'package:optigo/views/driver/manage_trip/widget/trip_card.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +22,9 @@ class _ManageTripState extends State<ManageTrip> {
     final driverId = FirebaseAuth.instance.currentUser?.uid;
 
     if (driverId != null) {
-          _driverTripsFuture = context.read<TripProvider>().loadTripsByDriverId(driverId);
+      _driverTripsFuture = context.read<TripProvider>().loadTripsByDriverId(
+        driverId,
+      );
     } else {
       _driverTripsFuture = Future.value([]);
     }
@@ -55,7 +55,7 @@ class _ManageTripState extends State<ManageTrip> {
             itemCount: trips.length,
             itemBuilder: (context, index) {
               final trip = trips[index];
-              return TripCard(trip: trip, status: trip.status,);
+              return TripCard(trip: trip, status: trip.status);
             },
           );
         },

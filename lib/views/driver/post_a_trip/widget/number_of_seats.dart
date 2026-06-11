@@ -25,7 +25,10 @@ enum CarType {
   );
 
   static CarType fromSeats(int seats) {
-    return values.firstWhere((e) => e.numberOfSeats == seats, orElse: () => CarType.sedan);
+    return values.firstWhere(
+      (e) => e.numberOfSeats == seats,
+      orElse: () => CarType.sedan,
+    );
   }
 }
 
@@ -33,7 +36,7 @@ class NumberOfSeats extends StatefulWidget {
   final ValueChanged<CarType?>? onSelected;
   final CarType? initialValue;
 
-  const NumberOfSeats({super.key, this.onSelected, this.initialValue, });
+  const NumberOfSeats({super.key, this.onSelected, this.initialValue});
 
   @override
   State<NumberOfSeats> createState() => _NumberOfSeatsState();
@@ -113,7 +116,10 @@ class _NumberOfSeatsState extends State<NumberOfSeats> {
               inputDecorationTheme: InputDecorationTheme(
                 filled: true,
                 fillColor: Colors.transparent,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 14.h,
+                ),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,

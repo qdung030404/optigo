@@ -3,9 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:optigo/models/trip_model.dart';
 import 'package:optigo/providers/trip_provider.dart';
+import 'package:optigo/views/driver/post_a_trip/widget/notify_dialog.dart';
 import 'package:optigo/views/driver/post_a_trip/widget/number_of_seats.dart';
 import 'package:optigo/views/driver/post_a_trip/widget/trip_form.dart';
-import 'package:optigo/views/driver/post_a_trip/widget/notify_dialog.dart';
 import 'package:provider/provider.dart';
 
 class EditTrip extends StatefulWidget {
@@ -39,9 +39,7 @@ class _EditTripState extends State<EditTrip> {
     showDialog(
       context: context,
       builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: NotifyDialog(
           title: title,
           icon: icon,
@@ -118,12 +116,14 @@ class _EditTripState extends State<EditTrip> {
                           routePolyline: widget.trip.routePolyline,
                           price: price,
                           totalSeats: seats,
-                          availableSeats: widget.trip.availableSeats, // Sẽ được tính lại trong provider
+                          availableSeats: widget.trip.availableSeats,
                           departureTime: departureTime,
                           status: widget.trip.status,
                         );
 
-                        final success = await tripProvider.updateTrip(updatedTrip);
+                        final success = await tripProvider.updateTrip(
+                          updatedTrip,
+                        );
 
                         if (success) {
                           if (context.mounted) {
@@ -134,14 +134,21 @@ class _EditTripState extends State<EditTrip> {
                               onTap: () {
                                 Navigator.pop(context);
                                 Navigator.pop(context);
-                                context.read<TripProvider>().loadTripsByDriverId(widget.trip.driverId);
+                                context
+                                    .read<TripProvider>()
+                                    .loadTripsByDriverId(widget.trip.driverId);
                               },
                             );
                           }
                         } else {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(tripProvider.errorMessage ?? 'Cập nhật thất bại')),
+                              SnackBar(
+                                content: Text(
+                                  tripProvider.errorMessage ??
+                                      'Cập nhật thất bại',
+                                ),
+                              ),
                             );
                           }
                         }

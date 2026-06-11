@@ -9,11 +9,7 @@ class PriceCard extends StatefulWidget {
   final int? initialPrice;
   final ValueChanged<int?>? onPriceChanged;
 
-  const PriceCard({
-    super.key,
-    this.initialPrice,
-    this.onPriceChanged,
-  });
+  const PriceCard({super.key, this.initialPrice, this.onPriceChanged});
 
   @override
   State<PriceCard> createState() => _PriceCardState();
@@ -86,14 +82,13 @@ class _PriceCardState extends State<PriceCard> {
             child: TextField(
               controller: _controller,
               inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly, // Chặn tất cả ký tự không phải số
-                CurrencyFormatter(), // Bộ định dạng dấu chấm tự động của chúng ta
+                FilteringTextInputFormatter.digitsOnly,
+                // Chặn tất cả ký tự không phải số
+                CurrencyFormatter(),
+                // Bộ định dạng dấu chấm tự động của chúng ta
               ],
               keyboardType: TextInputType.number,
-              style: GoogleFonts.lexend(
-                fontSize: 16.sp,
-                color: Colors.black,
-              ),
+              style: GoogleFonts.lexend(fontSize: 16.sp, color: Colors.black),
               decoration: InputDecoration(
                 hintText: 'Nhập giá (VNĐ)',
                 hintStyle: GoogleFonts.lexend(

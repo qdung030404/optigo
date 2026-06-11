@@ -22,13 +22,14 @@ class _DriverBottomNavBarState extends State<DriverBottomNavBar> {
     CombineTripsManagement(),
   ];
 
-
   @override
   void initState() {
     super.initState();
     final driverId = FirebaseAuth.instance.currentUser?.uid;
     if (driverId != null) {
-      RealtimeNotificationService().subscribeToBookings(driverId, (bookingData) {
+      RealtimeNotificationService().subscribeToBookings(driverId, (
+        bookingData,
+      ) {
         _showNotification(bookingData);
       });
     }
@@ -70,4 +71,3 @@ class _DriverBottomNavBarState extends State<DriverBottomNavBar> {
     );
   }
 }
-
