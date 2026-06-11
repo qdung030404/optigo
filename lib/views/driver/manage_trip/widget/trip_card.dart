@@ -7,8 +7,9 @@ import 'package:optigo/widgets/build_widget.dart';
 
 class TripCard extends StatefulWidget {
   final TripModel trip;
+  final TripStatus status;
 
-  const TripCard({super.key, required this.trip});
+  const TripCard({super.key, required this.trip, required this.status});
 
   @override
   State<TripCard> createState() => _TripCardState();
@@ -48,28 +49,18 @@ class _TripCardState extends State<TripCard> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: widget.trip.status == 'open'
-                      ? Colors.green.withOpacity(0.2)
-                      : Colors.grey.withOpacity(0.2),
+                  color: widget.status.color.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Row(
                   children: [
-                    widget.trip.status == 'open'
-                        ? Icon(Icons.group_add, size: 14, color: Colors.green)
-                        : Icon(
-                            Icons.lock_outline,
-                            size: 14,
-                            color: Colors.grey,
-                          ),
+                    Icon(widget.status.icon, size: 14, color: widget.status.color),
                     SizedBox(width: 4.w),
                     Text(
-                      widget.trip.status == 'open' ? 'Đang mở' : 'Đã đủ khách',
+                      widget.status.label,
                       style: TextStyle(
                         fontSize: 10.sp,
-                        color: widget.trip.status == 'open'
-                            ? Colors.green[700]
-                            : Colors.grey[700],
+                        color: widget.status.color,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

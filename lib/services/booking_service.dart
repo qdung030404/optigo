@@ -53,4 +53,15 @@ class BookingService {
       rethrow;
     }
   }
+  Future<void> rejectBooking(String driverId, int bookingId, String idToken) async {
+    try {
+      await authClient(idToken).rpc('reject_booking', params: {
+        'p_driver_id': driverId,
+        'p_booking_id': bookingId,
+      });
+    }catch(e){
+      debugPrint('Failed to reject booking: $e');
+      rethrow;
+    }
+  }
 }

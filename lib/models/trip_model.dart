@@ -1,3 +1,24 @@
+import 'package:flutter/material.dart';
+
+enum TripStatus {
+  open('pending', label: 'đang mở', color: Colors.green, icon: Icons.group_add),
+  full('full', label: 'Đã đủ khách', color: Colors.grey, icon: Icons.group_off),
+  cancelled('cancelled', label: 'Đã hủy', color: Colors.red, icon: Icons.cancel);
+
+  final String value;
+  final String label;
+  final Color color;
+  final IconData icon;
+  const TripStatus(this.value, {required this.label, required this.color, required this.icon});
+
+  static TripStatus fromString(String status) {
+    return TripStatus.values.firstWhere(
+          (e) => e.value == status,
+      orElse: () => TripStatus.open,
+    );
+  }
+}
+
 class TripModel {
   final String? id;
   final String driverId;
@@ -16,7 +37,7 @@ class TripModel {
   final int totalSeats;
   final int availableSeats;
   final DateTime departureTime;
-  final String status;
+  final TripStatus status;
 
   TripModel({
     this.id,
@@ -36,7 +57,7 @@ class TripModel {
     required this.totalSeats,
     required this.availableSeats,
     required this.departureTime,
-    required this.status,
+    this.status = TripStatus.open,
   });
 
   factory TripModel.fromJson(Map<String, dynamic> map) {
@@ -62,7 +83,7 @@ class TripModel {
       departureTime: map['departure_time'] != null
           ? DateTime.parse(map['departure_time'])
           : DateTime.now(),
-      status: map['status'] ?? 'open',
+      status: TripStatus.fromString(map['status'] ?? 'open'),
     );
   }
 
@@ -80,7 +101,7 @@ class TripModel {
       'total_seats': totalSeats,
       'available_seats': totalSeats,
       'departure_time': departureTime.toIso8601String(),
-      'status': status,
+      'status': status.value,
     };
   }
 }

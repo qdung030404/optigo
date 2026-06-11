@@ -97,7 +97,7 @@ class _BookingManagerState extends State<BookingManager> {
                     price: 0,
                     availableSeats: 0,
                     departureTime: DateTime.now(),
-                    status: '',
+                    status: TripStatus.open,
                     totalSeats: 0,
                   ),
                 );

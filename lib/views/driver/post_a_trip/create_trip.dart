@@ -156,7 +156,7 @@ class _CreateTripState extends State<CreateTrip> {
                           totalSeats: seats!,
                           availableSeats: seats!,
                           departureTime: departureTime!,
-                          status: 'open',
+                          status: TripStatus.open,
                         );
 
                         final success =

@@ -40,6 +40,7 @@ class BookingModel {
   final String? duration;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final String? cancelledBy;
 
   BookingModel({
     this.id,
@@ -62,6 +63,7 @@ class BookingModel {
     required this.duration,
     this.createdAt,
     this.updatedAt,
+    this.cancelledBy,
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> map) {
@@ -86,6 +88,7 @@ class BookingModel {
       duration: map['duration'] ?? '',
       createdAt: map['created_at'] != null ? DateTime.parse(map['created_at']) : null,
       updatedAt: map['updated_at'] != null ? DateTime.parse(map['updated_at']) : null,
+      cancelledBy: map['cancelled_by'],
     );
   }
 
@@ -111,6 +114,7 @@ class BookingModel {
       if (duration != null) 'duration': duration,
       if (createdAt != null) 'created_at': createdAt?.toIso8601String(),
       if (updatedAt != null) 'updated_at': updatedAt?.toIso8601String(),
+      if (cancelledBy != null) 'cancelled_by': cancelledBy,
     };
   }
 
@@ -131,10 +135,10 @@ class BookingModel {
     BookingStatus? status,
     String? passengerName,
     String? passengerPhone,
-    double? distance,
     String? duration,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? cancelledBy,
   }) {
     return BookingModel(
       id: id ?? this.id,
@@ -157,6 +161,7 @@ class BookingModel {
       duration: duration ?? this.duration,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      cancelledBy: cancelledBy ?? this.cancelledBy,
     );
   }
 }
