@@ -33,27 +33,37 @@ class TripService {
         .map((json) => TripModel.fromJson(json))
         .toList();
   }
-  Future<String?> getRoutePolyline(LatLng origin, LatLng destination) async {
-    try{
+  Future<Map<String, dynamic>?> getRouteData(LatLng origin, LatLng destination, {List<LatLng> waypoints = const []}) async {
+    try {
       final apiKey = dotenv.env['GOONG_API_KEY'];
       if (apiKey == null) throw Exception('Goong API Key not found');
-      final url = 'https://rsapi.goong.io/Direction?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&vehicle=car&api_key=$apiKey';
+      
+      String url = 'https://rsapi.goong.io/Direction?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&vehicle=car&api_key=$apiKey';
+      
+      if (waypoints.isNotEmpty) {
+        final waypointsString = waypoints.map((w) => '${w.latitude},${w.longitude}').join('|');
+        url += '&waypoints=$waypointsString';
+      }
+
       final response = await http.get(Uri.parse(url));
-      if(response.statusCode == 200){
+      if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        if(data['routes'] != null && (data['routes'] as List).isNotEmpty){
-          var route = data['routes'][0]['overview_polyline']['points'];
-          return route;
-        }else{
-          debugPrint('Goong API Error: ${response.statusCode} - ${response.body}');
+        if (data['routes'] != null && (data['routes'] as List).isNotEmpty) {
+          return data['routes'][0];
         }
       }
-    }catch(e){
-      debugPrint('Failed to fetch route polyline: $e');
-      return null;
+    } catch (e) {
+      debugPrint('Failed to fetch route data: $e');
     }
     return null;
+  }
 
+  Future<String?> getRoutePolyline(LatLng origin, LatLng destination, {List<LatLng> waypoints = const []}) async {
+    final routeData = await getRouteData(origin, destination, waypoints: waypoints);
+    if (routeData != null) {
+      return routeData['overview_polyline']['points'];
+    }
+    return null;
   }
   Future<void> createTrip(TripModel trip, String idToken) async {
     try {
