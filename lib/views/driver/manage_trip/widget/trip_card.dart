@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:optigo/models/trip_model.dart';
 import 'package:optigo/providers/trip_provider.dart';
-import 'package:optigo/views/driver/manage_trip/edit_trip.dart';
+import 'package:optigo/views/driver/manage_trip/trip_detail_map.dart';
 import 'package:optigo/widgets/build_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -28,6 +28,7 @@ class _TripCardState extends State<TripCard> {
     final tripProvider = context.read<TripProvider>();
     var bookedSeat = widget.trip.totalSeats - widget.trip.availableSeats;
     bool isFull = widget.trip.totalSeats == bookedSeat;
+
     return Container(
       padding: EdgeInsets.all(10.sp),
       margin: EdgeInsets.all(10.sp),
@@ -198,36 +199,34 @@ class _TripCardState extends State<TripCard> {
               : Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (!isFull) ...[
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    EditTrip(trip: widget.trip),
-                              ),
-                            );
-                          },
-                          label: Text(
-                            'Sửa chuyến đi',
-                            style: GoogleFonts.lexend(fontSize: 16.sp),
-                          ),
-                          icon: const Icon(Icons.edit_outlined),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.r),
-                              side: const BorderSide(color: Colors.black),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  TripDetailMap(trip: widget.trip),
                             ),
-                            elevation: 0,
+                          );
+                        },
+                        label: Text(
+                          'Chi tiết ',
+                          style: GoogleFonts.lexend(fontSize: 16.sp),
+                        ),
+                        icon: const Icon(Icons.info),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.r),
+                            side: const BorderSide(color: Colors.black),
                           ),
+                          elevation: 0,
                         ),
                       ),
-                      SizedBox(width: 10.w),
-                    ],
+                    ),
+                    SizedBox(width: 10.w),
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () =>
