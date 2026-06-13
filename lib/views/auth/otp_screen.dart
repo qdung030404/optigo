@@ -1,4 +1,5 @@
 import 'package:optigo/config/routes.dart';
+import 'package:optigo/models/user_model.dart';
 import 'package:optigo/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,7 +27,11 @@ class _OtpScreenState extends State<OtpScreen> {
       if (authProvider.status == AuthStatus.unregistered) {
         Navigator.pushReplacementNamed(context, Routes.setUserName); 
       } else if (authProvider.status == AuthStatus.authenticated) {
-        Navigator.pushReplacementNamed(context, Routes.home);
+        if (authProvider.user?.role == UserRole.driver) {
+          Navigator.pushReplacementNamed(context, Routes.driverHome);
+        } else {
+          Navigator.pushReplacementNamed(context, Routes.home);
+        }
       }
     } catch (e) {
       if (!mounted) return;

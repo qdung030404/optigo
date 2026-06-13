@@ -25,7 +25,6 @@ class _AuthFormState extends State<AuthForm> {
       if (authProvider.status == AuthStatus.codeSent){
         Navigator.pushNamed(context, Routes.otp);
       }
-      print(_completePhoneNumber);
     }catch(e){
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -93,26 +92,39 @@ class _AuthFormState extends State<AuthForm> {
         ),
         
         const SizedBox(height: 16),
-        
-        // Continue Button
-        ElevatedButton(
-          onPressed: _handleSignUp,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xfffedd59),
-            foregroundColor: const Color(0xff176bac),
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: Text(
-            'Continue',
-            style: GoogleFonts.lexend(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+
+        Consumer<AuthProvider>(
+          builder: (context, authProvider, child) {
+            return ElevatedButton(
+              onPressed: authProvider.isLoading ? null : _handleSignUp,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xfffedd59),
+                foregroundColor: const Color(0xff176bac),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                disabledBackgroundColor: const Color(0xfffedd59).withOpacity(0.6),
+              ),
+              child: authProvider.isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xff176bac),
+                      ),
+                    )
+                  : Text(
+                      'Đăng nhập',
+                      style: GoogleFonts.lexend(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            );
+          },
         ),
         
         const SizedBox(height: 24),
@@ -124,7 +136,7 @@ class _AuthFormState extends State<AuthForm> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Or continue with',
+                'Hoặc tiếp tục với',
                 style: GoogleFonts.lexend(
                   color: Colors.grey.shade500,
                   fontSize: 14,
