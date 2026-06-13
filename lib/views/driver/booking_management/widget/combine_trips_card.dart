@@ -175,126 +175,140 @@ class CombineTripsCard extends StatelessWidget {
             padding: EdgeInsets.all(8.sp),
             child: Consumer<BookingProvider>(
               builder: (context, provider, _) {
-                return booking.status == BookingStatus.pending ? Row(
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.3,
-                      child: ElevatedButton(
-                        onPressed: provider.isLoading
-                            ? null
-                            : () async {
-                          await provider.rejectBooking(
-                            driverId,
-                            booking.id!,
-                          );
-                          if (context.mounted) {
-                            if (provider.isSuccess) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Từ chối thành công!'),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
-                            } else if (provider.bookingErrorMessage !=
-                                null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    provider.bookingErrorMessage!,
+                return booking.status == BookingStatus.pending
+                    ? Row(
+                        children: [
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.3,
+                            child: ElevatedButton(
+                              onPressed: provider.isLoading
+                                  ? null
+                                  : () async {
+                                      await provider.rejectBooking(
+                                        driverId,
+                                        booking.id!,
+                                      );
+                                      if (context.mounted) {
+                                        if (provider.isSuccess) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Từ chối thành công!',
+                                              ),
+                                              backgroundColor: Colors.green,
+                                            ),
+                                          );
+                                        } else if (provider
+                                                .bookingErrorMessage !=
+                                            null) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                provider.bookingErrorMessage!,
+                                              ),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: const Color(0xff176bac),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  side: BorderSide(
+                                    width: 2.w,
+                                    color: const Color(0xff176bac),
                                   ),
-                                  backgroundColor: Colors.red,
                                 ),
-                              );
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xff176bac),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                            side: BorderSide(
-                              width: 2.w,
-                              color: const Color(0xff176bac),
+                              ),
+                              child: provider.isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      'Từ chối',
+                                      style: GoogleFonts.lexend(
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                             ),
                           ),
-                        ),
-                        child: provider.isLoading
-                            ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
-                        )
-                            : Text(
-                          'Từ chối',
-                          style: GoogleFonts.lexend(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: provider.isLoading
-                            ? null
-                            : () async {
-                          await provider.confirmBooking(
-                            driverId,
-                            booking.id!,
-                          );
-                          if (context.mounted) {
-                            if (provider.isSuccess) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Đã xác nhận chuyến thành công!',
-                                  ),
-                                  backgroundColor: Colors.green,
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: provider.isLoading
+                                  ? null
+                                  : () async {
+                                      await provider.confirmBooking(
+                                        driverId,
+                                        booking.id!,
+                                      );
+                                      if (context.mounted) {
+                                        if (provider.isSuccess) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Đã xác nhận chuyến thành công!',
+                                              ),
+                                              backgroundColor: Colors.green,
+                                            ),
+                                          );
+                                        } else if (provider
+                                                .bookingErrorMessage !=
+                                            null) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                provider.bookingErrorMessage!,
+                                              ),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xfffedd59),
+                                foregroundColor: const Color(0xff176bac),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
                                 ),
-                              );
-                            } else if (provider.bookingErrorMessage !=
-                                null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    provider.bookingErrorMessage!,
-                                  ),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xfffedd59),
-                          foregroundColor: const Color(0xff176bac),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: provider.isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      'Chấp nhận',
+                                      style: GoogleFonts.lexend(
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
                           ),
-                        ),
-                        child: provider.isLoading
-                            ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
-                        )
-                            : Text(
-                          'Chấp nhận',
-                          style: GoogleFonts.lexend(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ): SizedBox.shrink();
+                        ],
+                      )
+                    : SizedBox.shrink();
               },
             ),
           ),

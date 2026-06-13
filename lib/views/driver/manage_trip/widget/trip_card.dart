@@ -3,7 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:optigo/models/trip_model.dart';
+import 'package:optigo/providers/trip_provider.dart';
+import 'package:optigo/views/driver/manage_trip/trip_detail_map.dart';
 import 'package:optigo/widgets/build_widget.dart';
+import 'package:provider/provider.dart';
 
 class TripCard extends StatefulWidget {
   final TripModel trip;
@@ -22,9 +25,10 @@ class _TripCardState extends State<TripCard> {
       locale: 'vi_VN',
       symbol: 'VNĐ',
     );
-
+    final tripProvider = context.read<TripProvider>();
     var bookedSeat = widget.trip.totalSeats - widget.trip.availableSeats;
     bool isFull = widget.trip.totalSeats == bookedSeat;
+
     return Container(
       padding: EdgeInsets.all(10.sp),
       margin: EdgeInsets.all(10.sp),
@@ -54,7 +58,11 @@ class _TripCardState extends State<TripCard> {
                 ),
                 child: Row(
                   children: [
-                    Icon(widget.status.icon, size: 14, color: widget.status.color),
+                    Icon(
+                      widget.status.icon,
+                      size: 14,
+                      color: widget.status.color,
+                    ),
                     SizedBox(width: 4.w),
                     Text(
                       widget.status.label,
@@ -186,47 +194,60 @@ class _TripCardState extends State<TripCard> {
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
             child: Divider(height: 1, color: Colors.grey[400]),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (!isFull) ...[
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {},
-                    label: Text('Sửa chuyến đi', style: GoogleFonts.lexend(fontSize: 16.sp)),
-                    icon: const Icon(Icons.edit_outlined),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.r),
-                        side: const BorderSide(color: Colors.black),
+          (widget.status == TripStatus.cancelled)
+              ? SizedBox.shrink()
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  TripDetailMap(trip: widget.trip),
+                            ),
+                          );
+                        },
+                        label: Text(
+                          'Chi tiết ',
+                          style: GoogleFonts.lexend(fontSize: 16.sp),
+                        ),
+                        icon: const Icon(Icons.info),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.r),
+                            side: const BorderSide(color: Colors.black),
+                          ),
+                          elevation: 0,
+                        ),
                       ),
-                      elevation: 0,
                     ),
-                  ),
-                ),
-                SizedBox(width: 10.w),
-              ],
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.delete_outline),
-                  label: Text(widget.trip.status == 'open'
-                      ? 'Xóa chuyến đi'
-                      : 'Hủy chuyến đi', style: GoogleFonts.lexend(fontSize: 16.sp)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.withOpacity(0.2),
-                    foregroundColor: Colors.red,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.r),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () =>
+                            tripProvider.cancelTrip(widget.trip.id.toString()),
+                        icon: const Icon(Icons.delete_outline),
+                        label: Text(
+                          'Hủy chuyến đi',
+                          style: GoogleFonts.lexend(fontSize: 16.sp),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.withOpacity(0.2),
+                          foregroundColor: Colors.red,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
                     ),
-                    elevation: 0,
-                  ),
+                  ],
                 ),
-              ),
-            ],
-          ),
         ],
       ),
     );

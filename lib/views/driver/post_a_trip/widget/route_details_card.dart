@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:optigo/providers/search_provider.dart';
+import 'package:provider/provider.dart';
 
 class RouteDetailsCard extends StatelessWidget {
   final String? originName;
   final String? destinationName;
-  final void Function(String description, double lat, double lng) onPickupSelected;
-  final void Function(String description, double lat, double lng) onDestinationSelected;
+  final void Function(String description, double lat, double lng)
+  onPickupSelected;
+  final void Function(String description, double lat, double lng)
+  onDestinationSelected;
 
   const RouteDetailsCard({
     super.key,
@@ -54,25 +56,31 @@ class RouteDetailsCard extends StatelessWidget {
           _buildLocationInput(
             context: context,
             label: 'Điểm bắt đầu',
-            placeholder: (originName == null || originName!.isEmpty) ? 'Chọn điểm bắt đầu' : originName!,
+            placeholder: (originName == null || originName!.isEmpty)
+                ? 'Chọn điểm bắt đầu'
+                : originName!,
             onSelected: onPickupSelected,
           ),
           SizedBox(height: 16.h),
           _buildLocationInput(
             context: context,
             label: 'Điểm kết thúc',
-            placeholder: (destinationName == null || destinationName!.isEmpty) ? 'Chọn điểm kết thúc' : destinationName!,
+            placeholder: (destinationName == null || destinationName!.isEmpty)
+                ? 'Chọn điểm kết thúc'
+                : destinationName!,
             onSelected: onDestinationSelected,
           ),
         ],
       ),
     );
   }
+
   Widget _buildLocationInput({
     required BuildContext context,
     required String label,
     required String placeholder,
-    required void Function(String description, double lat, double lng) onSelected,
+    required void Function(String description, double lat, double lng)
+    onSelected,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,42 +115,59 @@ class RouteDetailsCard extends StatelessWidget {
               elevation: const WidgetStatePropertyAll<double>(0),
               backgroundColor: WidgetStatePropertyAll<Color>(Colors.grey[100]!),
               shape: WidgetStatePropertyAll<OutlinedBorder>(
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
               ),
             );
           },
-          suggestionsBuilder: (BuildContext context, SearchController controller) async {
-            if (controller.text.isEmpty) {
-              return [
-                ListTile(
-                  title: Text("Bắt đầu nhập để tìm kiếm...", style: GoogleFonts.lexend(fontSize: 14.sp)),
-                )
-              ];
-            }
+          suggestionsBuilder:
+              (BuildContext context, SearchController controller) async {
+                if (controller.text.isEmpty) {
+                  return [
+                    ListTile(
+                      title: Text(
+                        "Bắt đầu nhập để tìm kiếm...",
+                        style: GoogleFonts.lexend(fontSize: 14.sp),
+                      ),
+                    ),
+                  ];
+                }
 
-            final searchProvider = context.read<SearchProvider>();
-            await searchProvider.searchPlace(controller.text);
+                final searchProvider = context.read<SearchProvider>();
+                await searchProvider.searchPlace(controller.text);
 
-            return searchProvider.searchResults.map((place) {
-              return ListTile(
-                title: Text(place.mainText, style: GoogleFonts.lexend(fontSize: 14.sp, fontWeight: FontWeight.bold)),
-                subtitle: Text(place.secondaryText, style: GoogleFonts.lexend(fontSize: 12.sp)),
-                onTap: () async {
-                  controller.closeView(place.description);
-                  
-                  // Lấy chi tiết tọa độ từ Place ID
-                  final detail = await searchProvider.getPlaceDetail(place.placeId);
-                  if (detail != null) {
-                    onSelected(
-                      place.description,
-                      detail['lat']!,
-                      detail['lng']!,
-                    );
-                  }
-                },
-              );
-            }).toList();
-          },
+                return searchProvider.searchResults.map((place) {
+                  return ListTile(
+                    title: Text(
+                      place.mainText,
+                      style: GoogleFonts.lexend(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      place.secondaryText,
+                      style: GoogleFonts.lexend(fontSize: 12.sp),
+                    ),
+                    onTap: () async {
+                      controller.closeView(place.description);
+
+                      // Lấy chi tiết tọa độ từ Place ID
+                      final detail = await searchProvider.getPlaceDetail(
+                        place.placeId,
+                      );
+                      if (detail != null) {
+                        onSelected(
+                          place.description,
+                          detail['lat']!,
+                          detail['lng']!,
+                        );
+                      }
+                    },
+                  );
+                }).toList();
+              },
         ),
       ],
     );

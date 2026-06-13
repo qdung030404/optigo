@@ -139,6 +139,37 @@ class TripProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> updateTrip(TripModel trip) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if (idToken == null) throw Exception("User not authenticated");
+
+      if (trip.id == null) throw Exception("Trip ID is required for update");
+
+      final updates = {
+        'departure_time': trip.departureTime.toIso8601String(),
+        'price': trip.price,
+      };
+
+      await _tripService.updateTripDetails(
+        tripId: trip.id!,
+        updates: updates,
+        idToken: idToken,
+      );
+      return true;
+    } catch (e) {
+      _errorMessage = 'Lỗi cập nhật chuyến đi: $e';
+      debugPrint('Error updating trip: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
   Future<TripModel?> getTripById(String id) async {
     try {
       return await _tripService.fetchTripById(id);
@@ -165,6 +196,22 @@ class TripProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> cancelTrip(String tripId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if (idToken == null) throw Exception("User not authenticated");
+      await _tripService.cancelTrip(tripId, idToken);
+    } catch (e) {
+      _errorMessage = 'Lỗi hủy chuyến đi: $e';
+      debugPrint('Error canceling trip: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
   @override
   void dispose() {
     searchController.removeListener(_onSearchChanged);

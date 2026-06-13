@@ -2,17 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:optigo/utils/currency_formatter.dart';
 
 class PriceCard extends StatefulWidget {
   final int? initialPrice;
   final ValueChanged<int?>? onPriceChanged;
 
-  const PriceCard({
-    super.key,
-    this.initialPrice,
-    this.onPriceChanged,
-  });
+  const PriceCard({super.key, this.initialPrice, this.onPriceChanged});
 
   @override
   State<PriceCard> createState() => _PriceCardState();
@@ -24,9 +21,12 @@ class _PriceCardState extends State<PriceCard> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(
-      text: widget.initialPrice != null ? widget.initialPrice.toString() : '',
-    );
+    String initialText = '';
+    if (widget.initialPrice != null) {
+      final formatter = NumberFormat('#,###', 'vi_VN');
+      initialText = formatter.format(widget.initialPrice);
+    }
+    _controller = TextEditingController(text: initialText);
   }
 
   @override
@@ -82,14 +82,13 @@ class _PriceCardState extends State<PriceCard> {
             child: TextField(
               controller: _controller,
               inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly, // Chặn tất cả ký tự không phải số
-                CurrencyFormatter(), // Bộ định dạng dấu chấm tự động của chúng ta
+                FilteringTextInputFormatter.digitsOnly,
+                // Chặn tất cả ký tự không phải số
+                CurrencyFormatter(),
+                // Bộ định dạng dấu chấm tự động của chúng ta
               ],
               keyboardType: TextInputType.number,
-              style: GoogleFonts.lexend(
-                fontSize: 16.sp,
-                color: Colors.black,
-              ),
+              style: GoogleFonts.lexend(fontSize: 16.sp, color: Colors.black),
               decoration: InputDecoration(
                 hintText: 'Nhập giá (VNĐ)',
                 hintStyle: GoogleFonts.lexend(

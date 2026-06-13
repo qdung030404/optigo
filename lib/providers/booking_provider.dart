@@ -215,6 +215,11 @@ class BookingProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  List<BookingModel> filterConfirmedBookingsForTrip(List<BookingModel> allBookings, String tripId) {
+    return allBookings
+        .where((b) => b.tripId == tripId && b.status == BookingStatus.confirmed)
+        .toList();
+  }
   Future<void> contactDriver(String phoneNumber) async {
     String cleanNumber = phoneNumber.replaceAll(RegExp(r'\s+'), '');
     String formattedNumber = Formatter.phoneFormatter(cleanNumber);

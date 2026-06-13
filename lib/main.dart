@@ -64,6 +64,7 @@ class MyApp extends StatelessWidget {
         splitScreenMode: true,
         builder: ((context, child){
           return MaterialApp(
+            debugShowCheckedModeBanner: false,
             title: 'Optigo',
             initialRoute: Routes.splash,
             routes: {
