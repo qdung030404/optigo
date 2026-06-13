@@ -26,7 +26,11 @@ class _SetUserNameState extends State<SetUserName> {
       await authProvider.updateProfile(nameController.text, _selectedRole);
       if (!mounted) return;
       if (authProvider.isAuthenticated) {
-        Navigator.pushReplacementNamed(context, Routes.home);
+        if (_selectedRole == UserRole.driver) {
+          Navigator.pushReplacementNamed(context, Routes.driverHome);
+        } else {
+          Navigator.pushReplacementNamed(context, Routes.home);
+        }
       }
     } catch (e) {
       if (!mounted) return;
@@ -109,7 +113,7 @@ class _SetUserNameState extends State<SetUserName> {
           const Spacer(),
           Consumer<AuthProvider>(
             builder: (context, auth, child) {
-              final bool isLoading = auth.status == AuthStatus.loading;
+              final bool isVerifying = auth.status == AuthStatus.verifying;
               return Container(
                 width: double.infinity,
                 height: MediaQuery.of(context).size.height * 0.1,
@@ -119,8 +123,8 @@ class _SetUserNameState extends State<SetUserName> {
                     backgroundColor: Color(0xfffedd59),
                     foregroundColor: Color(0xff176bac),
                   ),
-                  onPressed: isLoading ? null : _handleSetName,
-                  child: isLoading
+                  onPressed: isVerifying ? null : _handleSetName,
+                  child: isVerifying
                       ? const CircularProgressIndicator(
                           color: Color(0xff176bac),
                           strokeWidth: 3,
