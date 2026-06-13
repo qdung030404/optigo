@@ -80,41 +80,47 @@ class DriverInfomation extends StatelessWidget {
           : Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                CircleAvatar(
-                  backgroundColor: Color(0xfffedd59),
-                  foregroundColor: Color(0xff176bac),
-                  radius: 20.r,
-                  child: Icon(Icons.person_outline, size: 24.sp),
-                ),
-                Column(
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      driverName ,
-                      style: GoogleFonts.lexend(
-                        color: const Color(0xFF176BAC),
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 2,
+                    CircleAvatar(
+                      backgroundColor: Color(0xfffedd59),
+                      foregroundColor: Color(0xff176bac),
+                      radius: 20.r,
+                      child: Icon(Icons.person_outline, size: 24.sp),
                     ),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10.w,
-                        vertical: 6.h,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.r),
-                        color: Color(0xFF176BAC).withOpacity(0.2),
-                      ),
-                      child: Text(
-                        driverLicensePlate,
-                        style: GoogleFonts.lexend(
-                          color: const Color(0xFF176BAC),
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                    SizedBox(width: 16.w),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          driverName ,
+                          style: GoogleFonts.lexend(
+                            color: const Color(0xFF176BAC),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
                         ),
-                      ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10.w,
+                            vertical: 6.h,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8.r),
+                            color: Color(0xFF176BAC).withOpacity(0.2),
+                          ),
+                          child: Text(
+                            driverLicensePlate,
+                            style: GoogleFonts.lexend(
+                              color: const Color(0xFF176BAC),
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
