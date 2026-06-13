@@ -1,13 +1,14 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:optigo/providers/search_provider.dart';
+import 'package:optigo/services/trip_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 enum MapType { initial, locating, locationError }
@@ -18,6 +19,7 @@ class MapProvider extends ChangeNotifier {
     return 'https://tiles.goong.io/assets/goong_map_highlight.json?api_key=$key';
   }
 
+  final _tripService = TripService();
   MapType _mapType = MapType.initial;
   MapType get mapType => _mapType;
 
@@ -28,6 +30,7 @@ class MapProvider extends ChangeNotifier {
   MapLibreMapController? _controller;
   String? _locationError;
   Symbol? _destinationPoint;
+  final List<Symbol> _tripMarkers = [];
   LatLng? currentLatLng;
   LatLng? destinationLatLng;
   String? _currentAddress;
@@ -73,16 +76,25 @@ class MapProvider extends ChangeNotifier {
   Future<void> onStyleLoaded() async {
     _isStyleLoaded = true;
 
-    try {
-      final ByteData bytes = await rootBundle.load("assets/images/locationEnd.png");
-      final Uint8List list = bytes.buffer.asUint8List();
-      await _controller?.addImage("location-end-icon", list);
-    } catch (e) {
-      debugPrint("Lỗi nạp icon marker: $e");
-    }
+    await _loadMarkerImage("assets/images/locationEnd.png", "location-end-icon");
+    await _loadMarkerImage("assets/images/pin.png", "pin-icon");
+    await _loadMarkerImage("assets/images/locationStart.png", "location-start-icon");
+
+    await _controller?.symbolManager?.setIconAllowOverlap(true);
+    await _controller?.symbolManager?.setIconIgnorePlacement(true);
 
     notifyListeners();
     await goToCurrentLocation();
+  }
+
+  Future<void> _loadMarkerImage(String assetPath, String iconName) async {
+    try {
+      final ByteData bytes = await rootBundle.load(assetPath);
+      final Uint8List list = bytes.buffer.asUint8List();
+      await _controller?.addImage(iconName, list);
+    } catch (e) {
+      debugPrint("Lỗi nạp icon marker ($iconName): $e");
+    }
   }
 
   // ─── Location & Markers ───────────────────────────────────────────────────
@@ -157,8 +169,8 @@ class MapProvider extends ChangeNotifier {
     _destinationPoint = await _controller!.addSymbol(
       SymbolOptions(
         geometry: latLng,
-        iconImage: 'location-end-icon', // Sử dụng icon đã nạp
-        iconSize: 0.3 // Điều chỉnh size cho phù hợp với ảnh PNG
+        iconImage: 'location-end-icon',
+        iconSize: 0.5,
       ),
     );
     destinationLatLng = latLng;
@@ -172,6 +184,39 @@ class MapProvider extends ChangeNotifier {
         ),
       ),
     );
+    notifyListeners();
+  }
+
+  /// Thêm nhiều marker cùng lúc (cho các điểm đón)
+  Future<void> addTripMarkers(List<LatLng> points, {required String icon}) async {
+    if (_controller == null) return;
+
+    for (final point in points) {
+      await addTripMarker(point, icon: icon, iconSize: 0.3);
+    }
+  }
+
+  /// Thêm một marker vào chuyến đi
+  Future<void> addTripMarker(LatLng point, {required String icon, double iconSize = 0.5}) async {
+    if (_controller == null) return;
+    final symbol = await _controller!.addSymbol(
+      SymbolOptions(
+        geometry: point,
+        iconImage: icon,
+        iconSize: iconSize,
+      ),
+    );
+    _tripMarkers.add(symbol);
+    notifyListeners();
+  }
+
+  /// Xóa tất cả markers liên quan đến chuyến đi
+  Future<void> clearTripMarkers() async {
+    if (_controller == null) return;
+    for (final symbol in _tripMarkers) {
+      await _controller!.removeSymbol(symbol);
+    }
+    _tripMarkers.clear();
     notifyListeners();
   }
 
@@ -194,30 +239,41 @@ class MapProvider extends ChangeNotifier {
   Future<void> getDirection() async {
     try {
       if (currentLatLng != null && destinationLatLng != null) {
-        final apiKey = dotenv.env['GOONG_API_KEY'];
-        final url = 'https://rsapi.goong.io/Direction?origin=${currentLatLng!.latitude},${currentLatLng!.longitude}&destination=${destinationLatLng!.latitude},${destinationLatLng!.longitude}&vehicle=car&api_key=$apiKey';
-
-        var response = await http.get(Uri.parse(url));
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-
-          // Kiểm tra list routes có dữ liệu hay không trước khi truy cập
-          if (data['routes'] != null && (data['routes'] as List).isNotEmpty) {
-            final routeData = data['routes'][0];
-            final leg = routeData['legs'][0];
-            var route = routeData['overview_polyline']['points'];
-            routeDistanceKm = (leg['distance']['value'] as num) / 1000.0;
-            routeDurationText = leg['duration']['text'];
-            List<PointLatLng> result = PolylinePoints.decodePolyline(route);
-            _userRoutePoints = result.map((point) => LatLng(point.latitude, point.longitude)).toList();
-            List<List<double>> coordinates = result.map((point) => [point.longitude, point.latitude]).toList();
-            _drawLine(coordinates);
-          }
-
+        final routeData = await _tripService.getRouteData(currentLatLng!, destinationLatLng!);
+        
+        if (routeData != null) {
+          final leg = routeData['legs'][0];
+          var route = routeData['overview_polyline']['points'];
+          routeDistanceKm = (leg['distance']['value'] as num) / 1000.0;
+          routeDurationText = leg['duration']['text'];
+          
+          List<PointLatLng> result = PolylinePoints.decodePolyline(route);
+          _userRoutePoints = result.map((point) => LatLng(point.latitude, point.longitude)).toList();
+          List<List<double>> coordinates = result.map((point) => [point.longitude, point.latitude]).toList();
+          _drawLine(coordinates);
         }
       }
     } catch (e) {
       debugPrint('Error getting direction: $e');
+    }
+  }
+
+  Future<void> showTripRoute({
+    required LatLng origin,
+    required LatLng destination,
+    List<LatLng> waypoints = const [],
+  }) async {
+    try {
+      final routeData = await _tripService.getRouteData(origin, destination, waypoints: waypoints);
+      
+      if (routeData != null) {
+        var route = routeData['overview_polyline']['points'];
+        List<PointLatLng> result = PolylinePoints.decodePolyline(route);
+        List<List<double>> coordinates = result.map((point) => [point.longitude, point.latitude]).toList();
+        await _drawLine(coordinates);
+      }
+    } catch (e) {
+      debugPrint('Error showing trip route: $e');
     }
   }
 
