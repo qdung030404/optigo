@@ -183,8 +183,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                       createdAt: DateTime.now(),
                     );
                     try {
-                      await bookingProvider.createBooking(bookingData);
-                      if (!mounted) return;
+
                       if (selectedName == null) {
                         _showBookingErrorDialog(
                           errorTitle: 'Vui lòng chọn điểm đón',
@@ -192,6 +191,8 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                         );
                         return;
                       }
+                      await bookingProvider.createBooking(bookingData);
+                      if (!mounted) return;
                       if (bookingProvider.bookingErrorMessage == 'seat_full') {
                         _showBookingErrorDialog(
                           errorTitle:

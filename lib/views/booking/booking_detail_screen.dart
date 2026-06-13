@@ -40,7 +40,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     }
   }
 
-  void _showancelDialog() {
+  void _showCancelDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -206,7 +206,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             SizedBox(width: 8.w),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => _showancelDialog(),
+                onPressed: () => _showCancelDialog(),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
@@ -242,7 +242,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               child: Text(
                 title,
                 style: GoogleFonts.lexend(
-                  fontSize: 16.sp,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.normal,
                 ),
               ),
@@ -251,7 +251,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               padding: EdgeInsets.only(left: 16.w),
               child: Text(
                 value,
-                style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
               ),
             ),
           ],
