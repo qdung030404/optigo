@@ -25,13 +25,26 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final TextEditingController originController = TextEditingController();
   final TextEditingController destinationController = TextEditingController();
+
+  late AnimationController _searchBarAnimationController;
+  late Animation<double> _searchBarFadeAnimation;
 
   @override
   void initState() {
     super.initState();
+    _searchBarAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _searchBarFadeAnimation = CurvedAnimation(
+      parent: _searchBarAnimationController,
+      curve: Curves.easeOut,
+    );
+    _searchBarAnimationController.forward();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<BookingProvider>().onBookingStatusChanged = (booking) {
         if (mounted) {
@@ -45,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     originController.dispose();
     destinationController.dispose();
+    _searchBarAnimationController.dispose();
     super.dispose();
   }
 
@@ -54,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: 'Tài xế đã chấp nhận yêu cầu ghép chuyến của bạn.',
     );
   }
+
   Future<void> _handleSearch({required bool isOrigin}) async {
     final result = await Navigator.push(
       context,
@@ -64,120 +79,85 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
     if (result != null && result is PlaceModel && mounted) {
-      // 1. Cập nhật nội dung ô nhập liệu tương ứng
       if (isOrigin) {
         originController.text = result.description;
       } else {
         destinationController.text = result.description;
-        // Cập nhật vào TripProvider để TripDetailScreen có thể hiển thị
         context.read<TripProvider>().searchCtrl.text = result.description;
       }
-      // 2. Lấy tọa độ chi tiết và cập nhật bản đồ
       final searchProvider = context.read<SearchProvider>();
       final mapProvider = context.read<MapProvider>();
       final detail = await searchProvider.getPlaceDetail(result.placeId);
       if (detail != null && mounted) {
         final latLng = LatLng(detail['lat']!, detail['lng']!);
-
         if (isOrigin) {
           mapProvider.setCurrentLocation(latLng);
         } else {
           await mapProvider.moveCameraAndAddMarker(latLng);
         }
-        // 3. Tự động vẽ đường đi nếu đã có đủ 2 điểm
-        if (mapProvider.currentLatLng != null && mapProvider.destinationLatLng != null) {
+        if (mapProvider.currentLatLng != null &&
+            mapProvider.destinationLatLng != null) {
           mapProvider.getDirection();
         }
       }
       context.read<TripProvider>().searchCtrl.text = result.description;
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final user = context.select<AuthProvider, UserModel?>((p) => p.user);
     final mapProvider = context.watch<MapProvider>();
+    final hasDestination = destinationController.text.isNotEmpty;
 
-    // Tự động điền vị trí hiện tại vào ô điểm đi nếu đang trống
     if (mapProvider.currentAddress != null && originController.text.isEmpty) {
       originController.text = mapProvider.currentAddress!;
     }
 
+    final topPadding = MediaQuery.of(context).padding.top;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Builder(
-            builder: (context) => Container(
-              decoration: BoxDecoration(
-                color: const Color(0xffFFF1B1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.menu, color: Colors.black),
-                onPressed: () => Scaffold.of(context).openDrawer(),
-              ),
-            ),
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xffFFF1B1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: IconButton(
-                icon: Icon(
-                  destinationController.text.isEmpty ? Icons.search : Icons.close,
-                  color: Colors.black,
-                ),
-                onPressed: () {
-                  if (destinationController.text.isEmpty) {
-                    _handleSearch(isOrigin: false);
-                  } else {
-                    // Xóa trạng thái và quay về chế độ bản đồ thuần túy
-                    destinationController.clear();
-                    context.read<MapProvider>().clearDestination();
-                    context.read<MapProvider>().goToCurrentLocation();
-                  }
-                },
-              )
-            ),
-          ),
-        ],
-      ),
       drawer: BuildDrawer(user: user),
       body: Stack(
         children: [
+          // ── Full screen map ──────────────────────────────────────────────
           BuildMap(),
+
+          // ── Floating top bar ─────────────────────────────────────────────
           Positioned(
-            top: MediaQuery.of(context).padding.top + 60,
+            top: topPadding + 12,
             left: 16,
             right: 16,
-            child: (destinationController.text.isNotEmpty)
-                ? LocationInputBox(
-                    destinationController: destinationController,
-                    originController: originController,
-                    initialOriginText: mapProvider.currentAddress,
-                    onOriginTap: () {
-                      _handleSearch(isOrigin: true);
-                    },
-                    onDestinationTap: () {
-                      _handleSearch(isOrigin: false);
-                    },
-                  )
-                : const SizedBox.shrink(),
+            child: FadeTransition(
+              opacity: _searchBarFadeAnimation,
+              child: !hasDestination
+                  ? _buildFloatingSearchBar(context, user)
+                  : LocationInputBox(
+                      destinationController: destinationController,
+                      originController: originController,
+                      initialOriginText: mapProvider.currentAddress,
+                      onOriginTap: () => _handleSearch(isOrigin: true),
+                      onDestinationTap: () => _handleSearch(isOrigin: false),
+                    ),
+            ),
           ),
+
+          // ── Clear destination button (shown when destination is set) ─────
+          if (hasDestination)
+            Positioned(
+              top: topPadding + 12,
+              right: 16,
+              child: _buildClearButton(context),
+            ),
+
+          // ── Booking bottom sheet ─────────────────────────────────────────
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: (destinationController.text.isNotEmpty)
+            child: hasDestination
                 ? Visibility(
                     visible: context.watch<BookingProvider>().showBookingBottomSheet &&
                         MediaQuery.of(context).viewInsets.bottom == 0,
@@ -190,9 +170,103 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget listTileItem(VoidCallback onTap, IconData icon, PlaceModel place, Color color) {
+  Widget _buildFloatingSearchBar(BuildContext context, UserModel? user) {
+    return Row(
+      children: [
+        // Avatar / Menu button
+        Builder(
+          builder: (ctx) => GestureDetector(
+            onTap: () => Scaffold.of(ctx).openDrawer(),
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.person, color: Color(0xff176bac)),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+
+        // Search pill
+        Expanded(
+          child: GestureDetector(
+            onTap: () => _handleSearch(isOrigin: false),
+            child: Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.search, color: Color(0xff176bac), size: 20),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Bạn muốn đi đâu?',
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildClearButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        destinationController.clear();
+        context.read<MapProvider>().clearDestination();
+        context.read<MapProvider>().goToCurrentLocation();
+        setState(() {});
+      },
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: const Icon(Icons.close, color: Colors.black54, size: 20),
+      ),
+    );
+  }
+
+  Widget listTileItem(
+      VoidCallback onTap, IconData icon, PlaceModel place, Color color) {
     return ListTile(
-      leading: Icon(icon, color: color,),
+      leading: Icon(icon, color: color),
       title: Text(place.mainText),
       subtitle: Text(
         place.secondaryText,
