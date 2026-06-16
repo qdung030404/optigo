@@ -71,7 +71,6 @@ class _BookingBottomsheetState extends State<BookingBottomsheet> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
-      height: MediaQuery.of(context).size.height * 0.5,
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -82,6 +81,7 @@ class _BookingBottomsheetState extends State<BookingBottomsheet> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
             padding: EdgeInsets.only(top: 8),
@@ -100,13 +100,25 @@ class _BookingBottomsheetState extends State<BookingBottomsheet> {
           NumberOfPassenger(),
           const SizedBox(height: 16),
           const PaymentMethod(),
-          Spacer(),
+          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () async {
               final mapProvider = context.read<MapProvider>();
               final tripProvider = context.read<TripProvider>();
               final bookingProvider = context.read<BookingProvider>();
               final navigator = Navigator.of(context);
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+              // Guard: kiểm tra toạ độ trước khi tìm chuyến
+              if (mapProvider.currentLatLng == null || mapProvider.destinationLatLng == null) {
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Vui lòng chọn điểm đi và điểm đến trước khi tìm chuyến.'),
+                    backgroundColor: Colors.redAccent,
+                  ),
+                );
+                return;
+              }
 
               bookingProvider.setShowBookingBottomSheet(false);
               _showLoadingDialog();

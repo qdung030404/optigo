@@ -11,7 +11,6 @@ class LocationInputBox extends StatefulWidget {
   final VoidCallback? onOriginTap;
   final VoidCallback? onDestinationTap;
 
-
   const LocationInputBox({
     super.key,
     this.initialDestinationText,
@@ -28,50 +27,57 @@ class LocationInputBox extends StatefulWidget {
 }
 
 class _LocationInputBoxState extends State<LocationInputBox> {
-
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       width: MediaQuery.of(context).size.width - 32,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.14),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Column(
             children: [
-              const Icon(Icons.circle, color: Colors.yellowAccent, size: 30),
-              Image.asset('assets/images/vertical_dotted_line.png'),
-              const Icon(Icons.location_pin, color: Colors.redAccent, size: 30),
+              Container(
+                width: 12,
+                height: 12,
+                decoration: const BoxDecoration(
+                  color: Color(0xff176bac),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              Image.asset(
+                'assets/images/vertical_dotted_line.png',
+                height: 28,
+              ),
+              const Icon(Icons.location_pin, color: Colors.redAccent, size: 22),
             ],
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
+
+          // ── Input fields ─────────────────────────────────────────────────
           Expanded(
             child: Column(
               children: [
-                // ── Điểm đi ──────────────────────────────────────────────
+                // Origin
                 SearchLocationWidget(
                   hintText: 'Vị trí của bạn',
                   controller: widget.originController,
                   initialText: widget.initialOriginText,
                   onTap: widget.onOriginTap,
                 ),
-                const Divider(height: 1, color: Colors.grey),
-                // ── Điểm đến ─────────────────────────────────────────────
+                Divider(height: 1, color: Colors.grey[200]),
+                // Destination
                 SearchLocationWidget(
                   hintText: 'Nhập điểm đến',
                   controller: widget.destinationController,
