@@ -23,7 +23,7 @@ class _AuthFormState extends State<AuthForm> {
       await authProvider.sendOtp(_completePhoneNumber);
       if (!mounted) return;
       if (authProvider.status == AuthStatus.codeSent){
-        Navigator.pushNamed(context, Routes.otp);
+        Navigator.pushNamed(context, Routes.otp, arguments: _completePhoneNumber);
       }
     }catch(e){
       if (!mounted) return;
