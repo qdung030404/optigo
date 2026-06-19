@@ -110,14 +110,6 @@ class BookingProvider extends ChangeNotifier {
         'updated_at': DateTime.now().toIso8601String(),
       }, onConflict: 'id');
 
-      // Gọi RPC kiểm tra & cập nhật seats
-      await _tripService.updateTrip(
-        tripId: booking.tripId,
-        seatsReduce: passengerCount,
-        idToken: idToken,
-      );
-
-      // Insert booking
       await TripService.authClient(
         idToken,
       ).from('bookings').insert(booking.toMap());
@@ -252,6 +244,7 @@ class BookingProvider extends ChangeNotifier {
 
       );
       _bookings.removeWhere((b) => b.id == booking.id);
+      print('xxxx');
     } catch (e) {
       debugPrint('Error canceling booking: $e');
       _bookingErrorMessage = "Không thể hủy chuyến đi. Vui lòng thử lại.";
