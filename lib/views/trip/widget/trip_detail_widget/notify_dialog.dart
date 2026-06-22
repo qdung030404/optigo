@@ -29,6 +29,7 @@ class NotifyDialog extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.lexend(fontSize: 16.sp, color: Colors.grey[600]),
+            textAlign: TextAlign.center,
           ),
           SizedBox(height: 20.h),
           SizedBox(

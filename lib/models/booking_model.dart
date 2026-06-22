@@ -112,7 +112,7 @@ class BookingModel {
       if (passengerPhone != null) 'passenger_phone': passengerPhone,
       if (distance != null) 'distance': distance,
       if (duration != null) 'duration': duration,
-      if (createdAt != null) 'created_at': createdAt?.toIso8601String(),
+      if (createdAt != null) 'created_at': createdAt?.toUtc().toIso8601String(),
       if (updatedAt != null) 'updated_at': updatedAt?.toIso8601String(),
       if (cancelledBy != null) 'cancelled_by': cancelledBy,
     };
@@ -163,5 +163,9 @@ class BookingModel {
       updatedAt: updatedAt ?? this.updatedAt,
       cancelledBy: cancelledBy ?? this.cancelledBy,
     );
+  }
+  bool get isExpired {
+    if(status != BookingStatus.pending || createdAt == null) return false;
+    return DateTime.now().difference(createdAt!).inMinutes >= 15;
   }
 }
