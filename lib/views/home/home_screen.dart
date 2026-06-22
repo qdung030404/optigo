@@ -63,10 +63,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _showNotification(BookingModel booking) {
-    NotificationService().showNotification(
-      title: 'Chấp nhận yêu cầu ',
-      body: 'Tài xế đã chấp nhận yêu cầu ghép chuyến của bạn.',
-    );
+    String title = '';
+    String body = '';
+    switch (booking.status) {
+      case BookingStatus.confirmed:
+        title = 'Chuyến đi đã xác nhận';
+        body = 'Tài xế đã chấp nhận yêu cầu ghép chuyến của bạn.';
+        break;
+      case BookingStatus.cancelled:
+        if (booking.isExpired) {
+          title = 'Yêu cầu hết hạn';
+          body = 'Yêu cầu ghép chuyến đã hết hạn do tài xế không phản hồi.';
+        } else {
+          title = 'Yêu cầu bị từ chối';
+          body = 'Tài xế đã từ chối yêu cầu ghép chuyến của bạn.';
+        }
+        break;
+      default:
+        return;
+    }
+    if (title.isNotEmpty) {
+      NotificationService().showNotification(
+        title: title,
+        body: body,
+      );
+    }
   }
 
   Future<void> _handleSearch({required bool isOrigin}) async {
