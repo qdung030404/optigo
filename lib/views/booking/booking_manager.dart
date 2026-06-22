@@ -102,6 +102,7 @@ class _BookingManagerState extends State<BookingManager> {
                   ),
                 );
                 return _buildTripCard(
+                  booking: booking,
                   from: trip.originName,
                   to: trip.destinationName,
                   code: booking.id.toString(),
@@ -163,6 +164,7 @@ class _BookingManagerState extends State<BookingManager> {
   }
 
   Widget _buildTripCard({
+    required BookingModel booking,
     required String from,
     required String to,
     required String code,
@@ -192,7 +194,7 @@ class _BookingManagerState extends State<BookingManager> {
         child: Column(
           children: [
             // Phần Header: Mã đặt vé và Trạng thái
-            CardHeader(code: code, status: status, isReadOnly: true,),
+            CardHeader(code: code, status: status, booking: booking, isReadOnly: true,),
 
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
