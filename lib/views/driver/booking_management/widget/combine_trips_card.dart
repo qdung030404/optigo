@@ -181,7 +181,7 @@ class CombineTripsCard extends StatelessWidget {
                           SizedBox(
                             width: MediaQuery.of(context).size.width * 0.3,
                             child: ElevatedButton(
-                              onPressed: provider.isLoading
+                              onPressed: provider.isLoading || booking.isExpired
                                   ? null
                                   : () async {
                                       await provider.rejectBooking(
@@ -247,7 +247,7 @@ class CombineTripsCard extends StatelessWidget {
                           SizedBox(width: 8.w),
                           Expanded(
                             child: ElevatedButton(
-                              onPressed: provider.isLoading
+                              onPressed: provider.isLoading || booking.isExpired
                                   ? null
                                   : () async {
                                       await provider.confirmBooking(

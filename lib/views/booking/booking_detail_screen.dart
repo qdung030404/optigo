@@ -86,6 +86,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             CardHeader(
               code: booking.id.toString(),
               status: booking.status,
+              booking: booking,
               isReadOnly: false,
             ),
             SizedBox(height: 16.h),

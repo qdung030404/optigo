@@ -226,6 +226,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                           },
                         );
                       } else if (bookingProvider.isSuccess) {
+                        bookingProvider.startTimer();
                         _showSuccessDialog();
                       }
                     } catch (e) {
