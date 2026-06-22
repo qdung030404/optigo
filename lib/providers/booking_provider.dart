@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +22,6 @@ class BookingProvider extends ChangeNotifier {
   // Callback để thông báo cho UI (như HomeScreen) khi có thay đổi trạng thái
   void Function(BookingModel)? onBookingStatusChanged;
 
-  final _tripService = TripService();
   final _bookingService = BookingService();
   bool _isNow = false;
   bool _isTimeSelected = false;
@@ -39,6 +40,16 @@ class BookingProvider extends ChangeNotifier {
   bool get showBookingBottomSheet => _showBookingBottomSheet;
 
   final currentUser = FirebaseAuth.instance.currentUser;
+
+  static const int _initialSeconds = 15 * 60;
+  int _secondsRemaining = _initialSeconds;
+  Timer? _timer;
+  bool _isRunning = false;
+  bool _isTimeUp = false;
+  int get secondsRemaining => _secondsRemaining;
+  bool get isRunning => _isRunning;
+  bool get isTimeUp => _isTimeUp;
+  double get progress => _secondsRemaining / _initialSeconds;
   void setShowBookingBottomSheet(bool value) {
     _showBookingBottomSheet = value;
     notifyListeners();
@@ -84,6 +95,29 @@ class BookingProvider extends ChangeNotifier {
     }
   }
 
+  void startTimer() {
+    if (_isRunning) return;
+    _isRunning = true;
+    _isTimeUp = false;
+    notifyListeners(); // Báo cho UI đổi màu nút hoặc trạng thái
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsRemaining > 0) {
+        _secondsRemaining--;
+        notifyListeners();
+      } else {
+        _timer?.cancel();
+        _isRunning = false;
+        _isTimeUp = true;
+        notifyListeners();
+      }
+    });
+  }
+  String get formattedTime {
+    int minutes = _secondsRemaining ~/ 60;
+    int seconds = _secondsRemaining % 60;
+    return "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+  }
   List<BookingModel> _bookings = [];
   List<BookingModel> get bookings => _bookings;
 
@@ -180,11 +214,6 @@ class BookingProvider extends ChangeNotifier {
     }
   }
 
-  @override
-  void dispose() {
-    _realtimeService.unsubscribe();
-    super.dispose();
-  }
   Future<List<BookingModel>> loadBookingsForDriver(String driverId) async {
     _isLoading = true;
     _bookingErrorMessage = null;
@@ -292,5 +321,11 @@ class BookingProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+  @override
+  void dispose() {
+    _realtimeService.unsubscribe();
+    _timer?.cancel();
+    super.dispose();
   }
 }
